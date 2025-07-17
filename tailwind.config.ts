@@ -27,6 +27,17 @@ const config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          50: "#FDF2F8",
+          100: "#FCE7F3",
+          200: "#FBCFE8",
+          300: "#F9A8D4",
+          400: "#F472B6",
+          500: "#EC4899",
+          600: "#DB2777",
+          700: "#BE185D",
+          800: "#9D174D",
+          900: "#831843",
+          950: "#500724",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -43,6 +54,7 @@ const config = {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          400: "#FBBF24", // amber-400
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -51,6 +63,14 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        gray: {
+          500: "#6B7280", // Muted text
+          800: "#1F2937", // Text color
+        },
+        glass: {
+          DEFAULT: "hsla(var(--glass-bg))",
+          border: "hsla(var(--glass-border))",
         },
       },
       borderRadius: {
@@ -67,14 +87,48 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "pulse-gentle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-gentle": "pulse-gentle 3s ease-in-out infinite",
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-glass': 'linear-gradient(135deg, hsla(var(--glass-bg)), hsla(var(--glass-bg) / 0.7))',
+      },
+      boxShadow: {
+        'glass': 'var(--glass-shadow)',
+        'glass-hover': '0 8px 32px rgba(0, 0, 0, 0.15)',
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.backdrop-blur-xs': {
+          '--tw-backdrop-blur': 'blur(2px)',
+          backdropFilter: 'var(--tw-backdrop-blur)',
+        },
+        '.backdrop-saturate-150': {
+          '--tw-backdrop-saturate': 'saturate(1.5)',
+          backdropFilter: 'var(--tw-backdrop-saturate)',
+        },
+        '.backdrop-glass': {
+          backdropFilter: 'blur(var(--glass-blur)) saturate(1.2)',
+        },
+      }
+      addUtilities(newUtilities)
+    },
+  ],
 } satisfies Config;
 
 export default config;
