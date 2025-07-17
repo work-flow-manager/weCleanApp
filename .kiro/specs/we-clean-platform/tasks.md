@@ -181,7 +181,10 @@
     - _Requirements: 3.3, 3.4_
 
 - [ ] 5. Map Integration and Location Tracking
-  - [ ] 5.1 Set up MapLibre GL integration
+  - [x] 5.1 Set up MapLibre GL integration
+
+
+
     - Initialize map component
     - Configure map styles to match design
     - Implement responsive map container
