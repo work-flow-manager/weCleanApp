@@ -1,32 +1,34 @@
-import { createClient } from "@/utils/supabase/server"
-import { redirect } from "next/navigation"
+import { UnifiedDashboardLayout } from "@/components/layouts/unified-dashboard-layout";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
+export default async function AdminDashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createClient();
   
   // Check if we have a session
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
-    redirect('/auth/login')
+    redirect("/auth/login");
   }
   
   // Get user profile to determine role
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
   
-  // Only allow admin users to access this layout
-  if (!profile || profile.role !== 'admin') {
-    // Redirect to appropriate dashboard based on role
-    if (profile && profile.role) {
-      redirect(`/dashboard/${profile.role}`)
-    } else {
-      redirect('/auth/login')
-    }
+  const userRole = profile?.role || "customer";
+  
+  // Only admin can access this layout
+  if (userRole !== "admin") {
+    redirect(`/dashboard/${userRole}`);
   }
   
-  return <>{children}</>
+  return <UnifiedDashboardLayout userRole="admin">{children}</UnifiedDashboardLayout>;
 }

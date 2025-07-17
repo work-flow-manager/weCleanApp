@@ -75,6 +75,7 @@ interface JobsListProps {
   onCreateJob?: () => void;
   onViewJob?: (jobId: string) => void;
   onUpdateStatus?: (jobId: string, status: DisplayJob["status"]) => void;
+  viewMode?: "grid" | "list";
 }
 
 interface JobFormData {
@@ -94,9 +95,9 @@ export default function JobsList({
   onCreateJob = () => {},
   onViewJob = () => {},
   onUpdateStatus = () => {},
+  viewMode = "grid",
 }: JobsListProps) {
   const { profile } = useAuth();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     DisplayJob["status"] | "all"
@@ -325,25 +326,6 @@ export default function JobsList({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              <Tabs defaultValue="grid" className="hidden sm:flex">
-                <TabsList className="bg-pink-100/50">
-                  <TabsTrigger
-                    value="grid"
-                    onClick={() => setViewMode("grid")}
-                    className="data-[state=active]:bg-white data-[state=active]:text-pink-500"
-                  >
-                    Grid
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="list"
-                    onClick={() => setViewMode("list")}
-                    className="data-[state=active]:bg-white data-[state=active]:text-pink-500"
-                  >
-                    List
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
 
               {canCreateJobs && (
                 <Dialog

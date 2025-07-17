@@ -140,87 +140,135 @@ export default function RegisterPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Create an account</h1>
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">Create an account</h1>
         <p className="text-sm text-muted-foreground mt-2">
           Enter your details to create a new account
         </p>
       </div>
 
       {error && (
-        <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
+        <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
           {error}
         </div>
       )}
       
       {success && (
-        <div className="bg-green-500/10 text-green-500 p-3 rounded-md text-sm flex items-center">
-          <CheckCircle2 className="h-4 w-4 mr-2" />
-          Account created successfully! Redirecting to dashboard...
+        <div className="bg-green-500/10 text-green-500 p-4 rounded-lg text-sm flex items-center">
+          <CheckCircle2 className="h-5 w-5 mr-2" />
+          <div>
+            <p className="font-medium">Account created successfully!</p>
+            <p>Redirecting to dashboard...</p>
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium mb-1">
+          <label htmlFor="name" className="block text-sm font-medium mb-2">
             Full Name
           </label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value)
-              setNameError(null)
-            }}
-            className={`glass-input w-full ${nameError ? 'border-destructive' : ''}`}
-            placeholder="John Doe"
-            required
-          />
+          <div className="relative">
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value)
+                setNameError(null)
+              }}
+              className={`w-full px-4 py-3 rounded-lg border ${nameError ? 'border-destructive' : 'border-input'} bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
+              placeholder="John Doe"
+              required
+            />
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-transparent">.</span>
+            </div>
+          </div>
           {nameError && (
             <p className="text-destructive text-xs mt-1">{nameError}</p>
           )}
         </div>
         
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
+          <label htmlFor="email" className="block text-sm font-medium mb-2">
             Email
           </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-              setEmailError(null)
-            }}
-            className={`glass-input w-full ${emailError ? 'border-destructive' : ''}`}
-            placeholder="you@example.com"
-            required
-          />
+          <div className="relative">
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setEmailError(null)
+              }}
+              className={`w-full px-4 py-3 rounded-lg border ${emailError ? 'border-destructive' : 'border-input'} bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
+              placeholder="you@example.com"
+              required
+            />
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </div>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-transparent">.</span>
+            </div>
+          </div>
           {emailError && (
             <p className="text-destructive text-xs mt-1">{emailError}</p>
           )}
         </div>
         
         <div>
-          <label htmlFor="role" className="block text-sm font-medium mb-1">
+          <label htmlFor="role" className="block text-sm font-medium mb-2">
             I am a
           </label>
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-            className="glass-input w-full"
-          >
-            <option value="customer">Customer looking for cleaning services</option>
-            <option value="team">Cleaning professional</option>
-            <option value="manager">Cleaning business manager</option>
-          </select>
+          <div className="relative">
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value as UserRole)}
+              className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+            >
+              <option value="customer">Customer looking for cleaning services</option>
+              <option value="team">Cleaning professional</option>
+              <option value="manager">Cleaning business manager</option>
+            </select>
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-transparent">.</span>
+            </div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+          </div>
         </div>
         
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
+          <label htmlFor="password" className="block text-sm font-medium mb-2">
             Password
           </label>
           <div className="relative">
@@ -232,75 +280,84 @@ export default function RegisterPage() {
                 setPassword(e.target.value)
                 setPasswordError(null)
               }}
-              className={`glass-input w-full pr-10 ${passwordError ? 'border-destructive' : ''}`}
+              className={`w-full px-4 py-3 rounded-lg border ${passwordError ? 'border-destructive' : 'border-input'} bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
               required
             />
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-transparent">.</span>
+            </div>
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="h-5 w-5" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <Eye className="h-5 w-5" />
               )}
             </button>
           </div>
           
           {password && (
-            <div className="mt-2">
-              <div className="flex justify-between items-center mb-1">
-                <div className="text-xs">Password strength: {getPasswordStrengthLabel()}</div>
-                <div className="text-xs">{passwordStrength}/5</div>
+            <div className="mt-3 p-3 bg-background border border-input rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-medium">Password strength: {getPasswordStrengthLabel()}</div>
+                <div className="text-sm">{passwordStrength}/5</div>
               </div>
-              <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden mb-3">
                 <div 
                   className={`h-full ${getPasswordStrengthColor()}`} 
                   style={{ width: `${(passwordStrength / 5) * 100}%` }}
                 ></div>
               </div>
               
-              <ul className="mt-2 space-y-1 text-xs">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 <li className="flex items-center">
                   {hasMinLength ? (
-                    <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-3 w-3 text-muted-foreground mr-1" />
+                    <XCircle className="h-4 w-4 text-muted-foreground mr-2 flex-shrink-0" />
                   )}
-                  At least 8 characters
+                  <span className={hasMinLength ? "" : "text-muted-foreground"}>At least 8 characters</span>
                 </li>
                 <li className="flex items-center">
                   {hasUpperCase ? (
-                    <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-3 w-3 text-muted-foreground mr-1" />
+                    <XCircle className="h-4 w-4 text-muted-foreground mr-2 flex-shrink-0" />
                   )}
-                  At least one uppercase letter
+                  <span className={hasUpperCase ? "" : "text-muted-foreground"}>Uppercase letter</span>
                 </li>
                 <li className="flex items-center">
                   {hasLowerCase ? (
-                    <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-3 w-3 text-muted-foreground mr-1" />
+                    <XCircle className="h-4 w-4 text-muted-foreground mr-2 flex-shrink-0" />
                   )}
-                  At least one lowercase letter
+                  <span className={hasLowerCase ? "" : "text-muted-foreground"}>Lowercase letter</span>
                 </li>
                 <li className="flex items-center">
                   {hasNumber ? (
-                    <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-3 w-3 text-muted-foreground mr-1" />
+                    <XCircle className="h-4 w-4 text-muted-foreground mr-2 flex-shrink-0" />
                   )}
-                  At least one number
+                  <span className={hasNumber ? "" : "text-muted-foreground"}>Number</span>
                 </li>
                 <li className="flex items-center">
                   {hasSpecialChar ? (
-                    <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-3 w-3 text-muted-foreground mr-1" />
+                    <XCircle className="h-4 w-4 text-muted-foreground mr-2 flex-shrink-0" />
                   )}
-                  At least one special character
+                  <span className={hasSpecialChar ? "" : "text-muted-foreground"}>Special character</span>
                 </li>
               </ul>
             </div>
@@ -312,7 +369,7 @@ export default function RegisterPage() {
         </div>
         
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
             Confirm Password
           </label>
           <div className="relative">
@@ -324,18 +381,27 @@ export default function RegisterPage() {
                 setConfirmPassword(e.target.value)
                 setConfirmPasswordError(null)
               }}
-              className={`glass-input w-full pr-10 ${confirmPasswordError ? 'border-destructive' : ''}`}
+              className={`w-full px-4 py-3 rounded-lg border ${confirmPasswordError ? 'border-destructive' : 'border-input'} bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
               required
             />
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-transparent">.</span>
+            </div>
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
               {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="h-5 w-5" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <Eye className="h-5 w-5" />
               )}
             </button>
           </div>
@@ -347,17 +413,17 @@ export default function RegisterPage() {
         <div>
           <button
             type="submit"
-            className="w-full bg-primary text-white py-2 rounded-md hover:bg-primary-600 transition-colors flex items-center justify-center"
+            className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center font-medium shadow-sm"
             disabled={loading || success}
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Creating account...
               </>
             ) : success ? (
               <>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
+                <CheckCircle2 className="mr-2 h-5 w-5" />
                 Account created!
               </>
             ) : (
@@ -367,10 +433,10 @@ export default function RegisterPage() {
         </div>
       </form>
 
-      <div className="text-center">
+      <div className="text-center pt-4">
         <p className="text-sm">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-primary hover:underline">
+          <Link href="/auth/login" className="text-primary font-medium hover:underline">
             Sign in
           </Link>
         </p>

@@ -64,6 +64,12 @@ export function Sidebar({ userRole = "admin" }: SidebarProps) {
       roles: ["admin", "manager", "team", "customer"],
     },
     {
+      title: "Profile",
+      href: "/profile",
+      icon: <Users className="h-5 w-5" />,
+      roles: ["admin", "manager", "team", "customer"],
+    },
+    {
       title: "Settings",
       href: "/settings",
       icon: <Settings className="h-5 w-5" />,
@@ -147,15 +153,24 @@ export function Sidebar({ userRole = "admin" }: SidebarProps) {
         <div className="flex items-center justify-between">
           <ThemeToggle />
           {!collapsed && (
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary"></div>
+            <Link href="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+                {userRole.charAt(0).toUpperCase()}
+              </div>
               <div>
-                <p className="text-sm font-medium">User Name</p>
+                <p className="text-sm font-medium">My Profile</p>
                 <p className="text-xs text-muted-foreground capitalize">
                   {userRole}
                 </p>
               </div>
-            </div>
+            </Link>
+          )}
+          {collapsed && (
+            <Link href="/profile" className="flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+                {userRole.charAt(0).toUpperCase()}
+              </div>
+            </Link>
           )}
         </div>
       </div>

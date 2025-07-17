@@ -7,13 +7,17 @@ import {
   UserProfile,
   UserRole,
   createCustomerProfile,
+  getUserProfile,
 } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  isAuthenticated: boolean;
+  userRole: UserRole | null;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   signUp: (
     email: string,
     password: string,
@@ -21,6 +25,10 @@ interface AuthContextType {
     role: UserRole,
   ) => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<UserProfile | null>;
+  hasPermission: (allowedRoles: UserRole[]) => boolean;
+  refreshProfile: () => Promise<UserProfile | null>;
+  redirectToDashboard: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -109,10 +117,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe?: boolean) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
+      options: {
+        // Set session expiry based on remember me option
+        expiresIn: rememberMe ? 30 * 24 * 60 * 60 : 8 * 60 * 60, // 30 days or 8 hours
+      }
     });
 
     if (error) throw error;
@@ -155,13 +167,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (error) throw error;
   };
 
+  const updateProfile = async (updates: Partial<UserProfile>): Promise<UserProfile | null> => {
+    if (!user) throw new Error("User not authenticated");
+    
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error updating profile:", error);
+      return null;
+    }
+    
+    setProfile(data);
+    return data;
+  };
+  
+  const hasPermission = (allowedRoles: UserRole[]): boolean => {
+    if (!profile) return false;
+    return allowedRoles.includes(profile.role);
+  };
+
+  const refreshProfile = async (): Promise<UserProfile | null> => {
+    if (!user) return null;
+    
+    try {
+      const profile = await getUserProfile(user.id);
+      if (profile) {
+        setProfile(profile);
+      }
+      return profile;
+    } catch (error) {
+      console.error("Error refreshing profile:", error);
+      return null;
+    }
+  };
+  
+  const router = useRouter();
+  
+  const redirectToDashboard = () => {
+    if (!profile) return;
+    router.push(`/dashboard/${profile.role}`);
+  };
+
+  const isAuthenticated = !!user && !!profile;
+  const userRole = profile?.role || null;
+
   const value = {
     user,
     profile,
     loading,
+    isAuthenticated,
+    userRole,
     signIn,
     signUp,
     signOut,
+    updateProfile,
+    hasPermission,
+    refreshProfile,
+    redirectToDashboard,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

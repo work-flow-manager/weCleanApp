@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { UnifiedDashboardLayout } from "@/components/layouts/unified-dashboard-layout"
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -21,5 +21,5 @@ export default async function Layout({ children }: { children: React.ReactNode }
   
   const userRole = profile?.role || 'customer'
   
-  return <DashboardLayout userRole={userRole}>{children}</DashboardLayout>
+  return <UnifiedDashboardLayout userRole={userRole}>{children}</UnifiedDashboardLayout>
 }

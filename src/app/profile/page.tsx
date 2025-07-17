@@ -1,237 +1,132 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { User, Mail, Phone, Globe, Save } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { createClient } from "@/utils/supabase/client"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/protected-route";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
+import { ProfileForm } from "@/components/profile/profile-form";
+import { UserSettingsForm } from "@/components/profile/user-settings-form";
 
 export default function ProfilePage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [fullName, setFullName] = useState("")
-  const [phone, setPhone] = useState("")
-  const [language, setLanguage] = useState("en")
-  const [message, setMessage] = useState("")
-  const [error, setError] = useState("")
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const supabase = createClient()
-      
-      // Get user
-      const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError || !userData) {
-        router.push("/auth/login")
-        return
-      }
-      
-      setUser(userData)
-      
-      // Get profile
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userData.id)
-        .single()
-      
-      if (profileError) {
-        console.error("Error fetching profile:", profileError)
-        setError("Failed to load profile data")
-      } else if (profileData) {
-        setProfile(profileData)
-        setFullName(profileData.full_name || "")
-        setLanguage(profileData.language || "en")
-      }
-      
-      setLoading(false)
-    }
-    
-    fetchProfile()
-  }, [router])
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-    setMessage("")
-    setError("")
-    
-    try {
-      const supabase = createClient()
-      
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          full_name: fullName,
-          language,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id)
-      
-      if (error) {
-        throw error
-      }
-      
-      setMessage("Profile updated successfully")
-    } catch (err: any) {
-      console.error("Error updating profile:", err)
-      setError(err.message || "Failed to update profile")
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-      </div>
-    )
-  }
-
   return (
-    <div className="container mx-auto py-8">
-      <Card glass className="mx-auto max-w-2xl">
-        <CardHeader>
-          <CardTitle>Profile Settings</CardTitle>
-          <CardDescription>
-            Update your personal information and preferences
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleUpdateProfile}>
-          <CardContent className="space-y-6">
-            {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
-                {error}
-              </div>
-            )}
-            {message && (
-              <div className="rounded-md bg-green-50 p-3 text-center text-sm text-green-800">
-                {message}
-              </div>
-            )}
-            
-            <div className="flex items-center justify-center">
-              <div className="relative">
-                <div className="h-24 w-24 overflow-hidden rounded-full bg-primary/20 text-center">
-                  {profile?.avatar_url ? (
-                    <img
-                      src={profile.avatar_url}
-                      alt={profile.full_name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <User className="h-12 w-12 text-primary" />
-                    </div>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="absolute bottom-0 right-0 rounded-full"
-                >
-                  Edit
-                </Button>
-              </div>
+    <ProtectedRoute>
+      <ProfileContent />
+    </ProtectedRoute>
+  );
+}
+
+function ProfileContent() {
+  const { user, profile, loading } = useAuth();
+  const router = useRouter();
+  
+  if (loading || !profile) {
+    return (
+      <DashboardLayout>
+        <div className="flex h-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  return (
+    <DashboardLayout>
+      <div className="container mx-auto py-6">
+        <h1 className="text-3xl font-bold mb-6">My Profile</h1>
+        
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="profile">Profile Information</TabsTrigger>
+            <TabsTrigger value="settings">Account Settings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile">
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Profile Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Personal Information</CardTitle>
+                  <CardDescription>
+                    Update your personal details and profile picture
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  <ProfileForm profile={profile} />
+                </CardContent>
+              </Card>
+              
+              {/* Account Info Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account Information</CardTitle>
+                  <CardDescription>
+                    Your account details and role
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Account Type</p>
+                    <p className="text-sm capitalize bg-pink-100 text-pink-800 inline-block px-2 py-1 rounded">
+                      {profile.role}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Member Since</p>
+                    <p className="text-sm">
+                      {profile.created_at 
+                        ? new Date(profile.created_at).toLocaleDateString() 
+                        : "N/A"}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Last Updated</p>
+                    <p className="text-sm">
+                      {profile.updated_at 
+                        ? new Date(profile.updated_at).toLocaleDateString() 
+                        : "N/A"}
+                    </p>
+                  </div>
+                  
+                  <div className="pt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => router.push(`/dashboard/${profile.role}`)}
+                    >
+                      Return to Dashboard
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <div className="glass-input flex items-center">
-                <Mail className="ml-2 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="email"
-                  type="email"
-                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none"
-                  value={user?.email || ""}
-                  disabled
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Email cannot be changed
-              </p>
+          </TabsContent>
+          
+          <TabsContent value="settings">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Account Settings</CardTitle>
+                  <CardDescription>
+                    Manage your account preferences and settings
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  {user && <UserSettingsForm userId={user.id} />}
+                </CardContent>
+              </Card>
             </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="fullName" className="text-sm font-medium">
-                Full Name
-              </label>
-              <div className="glass-input flex items-center">
-                <User className="ml-2 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="fullName"
-                  type="text"
-                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="language" className="text-sm font-medium">
-                Language
-              </label>
-              <div className="glass-input flex items-center">
-                <Globe className="ml-2 h-4 w-4 text-muted-foreground" />
-                <select
-                  id="language"
-                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                >
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                  <option value="pt">Português</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium">
-                Role
-              </label>
-              <div className="glass-input flex items-center">
-                <User className="ml-2 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="role"
-                  type="text"
-                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none"
-                  value={profile?.role || ""}
-                  disabled
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Role cannot be changed
-              </p>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="ml-auto" disabled={saving}>
-              {saving ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  )
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
+  );
 }

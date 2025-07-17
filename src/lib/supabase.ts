@@ -13,6 +13,20 @@ export interface UserProfile {
   full_name: string;
   role: UserRole;
   avatar_url?: string;
+  phone_number?: string;
+  language?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserSettings {
+  id: string;
+  user_id: string;
+  theme: 'light' | 'dark' | 'system';
+  language: string;
+  email_notifications: boolean;
+  push_notifications: boolean;
+  sms_notifications: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -451,5 +465,122 @@ export const getTeamMembers = async () => {
     .order("profiles(full_name)");
 
   if (error) throw error;
+  return data;
+};
+// User settings related functions
+export const getUserSettings = async (userId: string): Promise<UserSettings | null> => {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    // If no settings found, create default settings
+    if (error.code === "PGRST116") {
+      return createDefaultUserSettings(userId);
+    }
+    console.error("Error fetching user settings:", error);
+    return null;
+  }
+
+  return data;
+};
+
+export const createDefaultUserSettings = async (userId: string): Promise<UserSettings | null> => {
+  const defaultSettings = {
+    user_id: userId,
+    theme: "system" as const,
+    language: "en",
+    email_notifications: true,
+    push_notifications: true,
+    sms_notifications: false,
+  };
+
+  const { data, error } = await supabase
+    .from("user_settings")
+    .insert(defaultSettings)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating default user settings:", error);
+    return null;
+  }
+
+  return data;
+};
+
+export const updateUserSettings = async (
+  userId: string,
+  settings: Partial<UserSettings>
+): Promise<UserSettings | null> => {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .upsert({
+      user_id: userId,
+      ...settings,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating user settings:", error);
+    return null;
+  }
+
+  return data;
+};
+
+// Profile image related functions
+export const uploadProfileImage = async (
+  userId: string,
+  file: File
+): Promise<string | null> => {
+  try {
+    // Generate a unique file name
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+    
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from("user-avatars")
+      .upload(filePath, file);
+      
+    if (uploadError) {
+      throw uploadError;
+    }
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("user-avatars")
+      .getPublicUrl(filePath);
+      
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error("Error uploading profile image:", error);
+    return null;
+  }
+};
+
+// Update user profile with additional fields
+export const updateUserProfile = async (
+  userId: string,
+  updates: Partial<UserProfile>
+): Promise<UserProfile | null> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("id", userId)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error("Error updating user profile:", error);
+    return null;
+  }
+  
   return data;
 };
