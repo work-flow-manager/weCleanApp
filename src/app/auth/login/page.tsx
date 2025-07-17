@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import DemoLogin from "./demo-login"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -83,31 +84,34 @@ export default function LoginPage() {
       
       console.log("Attempting to sign in with:", email)
       
-      // For demo purposes, allow login with test credentials
-      if (email === "demo@example.com" && password === "password123") {
-        console.log("Using demo credentials")
-        // Wait a bit to simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Store a fake session in localStorage to simulate being logged in
-        localStorage.setItem('demoUserLoggedIn', 'true')
-        localStorage.setItem('demoUserRole', 'admin')
-        
-        // Redirect to dashboard
-        router.push('/dashboard/admin')
-        return
+      // Call our API route for authentication
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sign in');
       }
       
-      // Sign in with Supabase
-      await signIn(email, password)
+      // For demo user, store in localStorage too for client-side access
+      if (email === "demo@example.com" && password === "password123") {
+        localStorage.setItem('demoUserLoggedIn', 'true');
+        localStorage.setItem('demoUserRole', 'admin');
+      }
       
       // Redirect to dashboard or specified redirect URL
-      router.push(redirectTo)
+      router.push(redirectTo);
     } catch (err: any) {
-      console.error("Login error:", err)
-      setError(err.message || "Failed to sign in. Please check your credentials.")
+      console.error("Login error:", err);
+      setError(err.message || "Failed to sign in. Please check your credentials.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -253,6 +257,8 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+      
+      <DemoLogin />
     </div>
   )
 }
