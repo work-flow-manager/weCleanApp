@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const withNextIntl = require('next-intl/plugin')('./src/i18n/config.ts');
 
 const nextConfig = {
     images: {
@@ -17,4 +18,4 @@ if (process.env.NEXT_PUBLIC_TEMPO) {
     }
 }
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);

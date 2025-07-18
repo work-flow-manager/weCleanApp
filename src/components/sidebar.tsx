@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Settings,
   Users,
+  Receipt,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -38,6 +39,12 @@ export function Sidebar({ userRole = "admin" }: SidebarProps) {
       href: "/jobs",
       icon: <ClipboardList className="h-5 w-5" />,
       roles: ["admin", "manager", "team", "customer"],
+    },
+    {
+      title: "Invoices",
+      href: "/invoices",
+      icon: <Receipt className="h-5 w-5" />,
+      roles: ["admin", "manager", "customer"],
     },
     {
       title: "Schedule",
@@ -71,7 +78,7 @@ export function Sidebar({ userRole = "admin" }: SidebarProps) {
     },
     {
       title: "Settings",
-      href: "/settings",
+      href: "/dashboard/settings",
       icon: <Settings className="h-5 w-5" />,
       roles: ["admin", "manager", "team", "customer"],
     },

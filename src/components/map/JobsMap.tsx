@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from "react";
 import MapView from "./MapView";
 import JobLocationMarker from "./JobLocationMarker";
+import TeamMemberMarker from "./TeamMemberMarker";
+import TeamLocationTracker from "./TeamLocationTracker";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Job {
   id: string;
@@ -38,6 +41,7 @@ interface JobsMapProps {
   onJobClick?: (jobId: string) => void;
   onTeamMemberClick?: (memberId: string) => void;
   showTeamLocations?: boolean;
+  enableLocationTracking?: boolean;
   height?: string | number;
   className?: string;
   initialCenter?: [number, number];
@@ -50,15 +54,18 @@ export default function JobsMap({
   onJobClick,
   onTeamMemberClick,
   showTeamLocations = false,
+  enableLocationTracking = false,
   height = "600px",
   className = "",
   initialCenter,
   initialZoom = 10,
 }: JobsMapProps) {
+  const { user } = useAuth();
   const [displayTeamLocations, setDisplayTeamLocations] = useState(showTeamLocations);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(initialCenter);
   const [mapZoom, setMapZoom] = useState(initialZoom);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTracking, setIsTracking] = useState(false);
 
   // Calculate map center based on job locations if not provided
   useEffect(() => {
@@ -197,6 +204,19 @@ export default function JobsMap({
         <MapPin className="h-4 w-4 mr-1.5 text-pink-500" />
         {jobs.filter(job => job.location).length} locations
       </div>
+      
+      {/* Location tracking for team members */}
+      {enableLocationTracking && user && user.role === 'team' && (
+        <div className="absolute bottom-4 right-4 z-10">
+          <TeamLocationTracker 
+            enabled={false}
+            onStatusChange={setIsTracking}
+            showControls={true}
+            updateInterval={30000} // Update every 30 seconds
+            minimumDistance={5} // Minimum 5 meters movement to update
+          />
+        </div>
+      )}
     </div>
   );
 }
