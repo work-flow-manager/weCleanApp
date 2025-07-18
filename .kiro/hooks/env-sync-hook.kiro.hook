@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Environment Variables Sync",
+  "description": "Automatically adds new environment variables from .env.local to .env.example to ensure all required environment variables are documented",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".env.local"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "I noticed changes to the .env.local file. I'll analyze the changes and ensure any new environment variables are also added to .env.example.\n\n1. Compare the environment variables in .env.local and .env.example\n2. Identify any variables in .env.local that are missing from .env.example\n3. Add the missing variables to .env.example (without their values)\n4. Maintain the same formatting and organization in .env.example\n\nPlease provide the necessary updates to keep .env.example in sync with .env.local."
+  }
+}

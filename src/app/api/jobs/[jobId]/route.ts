@@ -10,7 +10,9 @@ const updateJobSchema = z.object({
   scheduled_date: z.string().optional(),
   scheduled_time: z.string().optional(),
   estimated_duration: z.number().optional(),
-  status: z.enum(["scheduled", "in-progress", "completed", "cancelled", "issue"]).optional(),
+  status: z
+    .enum(["scheduled", "in-progress", "completed", "cancelled", "issue"])
+    .optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   special_instructions: z.string().optional(),
   estimated_price: z.number().optional(),
@@ -18,16 +20,19 @@ const updateJobSchema = z.object({
   assigned_manager: z.string().uuid().optional(),
 });
 
-// GET /api/jobs/[id] - Get a specific job
+// GET /api/jobs/[jobId] - Get a specific job
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -46,7 +51,8 @@ export async function GET(
     // Get the job with all related data
     let query = supabase
       .from("jobs")
-      .select(`
+      .select(
+        `
         *,
         customers!inner(
           id,
@@ -106,8 +112,9 @@ export async function GET(
           email,
           phone
         )
-      `)
-      .eq("id", params.id)
+      `,
+      )
+      .eq("id", params.jobId)
       .single();
 
     const { data: job, error } = await query;
@@ -117,33 +124,46 @@ export async function GET(
         return NextResponse.json({ error: "Job not found" }, { status: 404 });
       }
       console.error("Error fetching job:", error);
-      return NextResponse.json({ error: "Failed to fetch job" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch job" },
+        { status: 500 },
+      );
     }
 
     // Check access permissions
-    const hasAccess = await checkJobAccess(supabase, job.id, user.id, profile.role);
+    const hasAccess = await checkJobAccess(
+      supabase,
+      job.id,
+      user.id,
+      profile.role,
+    );
     if (!hasAccess) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     return NextResponse.json({ job });
-
   } catch (error) {
-    console.error("Error in GET /api/jobs/[id]:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in GET /api/jobs/[jobId]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
-// PUT /api/jobs/[id] - Update a specific job
+// PUT /api/jobs/[jobId] - Update a specific job
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -161,13 +181,24 @@ export async function PUT(
 
     // Only admin, manager, and team can update jobs
     if (!["admin", "manager", "team"].includes(profile.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
     }
 
     // Check if job exists and user has access
-    const hasAccess = await checkJobAccess(supabase, params.id, user.id, profile.role);
+    const hasAccess = await checkJobAccess(
+      supabase,
+      params.jobId,
+      user.id,
+      profile.role,
+    );
     if (!hasAccess) {
-      return NextResponse.json({ error: "Job not found or access denied" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Job not found or access denied" },
+        { status: 404 },
+      );
     }
 
     // Parse and validate request body
@@ -178,13 +209,16 @@ export async function PUT(
     if (profile.role === "team") {
       const allowedFields = ["status"];
       const hasDisallowedFields = Object.keys(validatedData).some(
-        key => !allowedFields.includes(key)
+        (key) => !allowedFields.includes(key),
       );
-      
+
       if (hasDisallowedFields) {
-        return NextResponse.json({ 
-          error: "Team members can only update job status" 
-        }, { status: 403 });
+        return NextResponse.json(
+          {
+            error: "Team members can only update job status",
+          },
+          { status: 403 },
+        );
       }
     }
 
@@ -192,15 +226,16 @@ export async function PUT(
     const { data: currentJob } = await supabase
       .from("jobs")
       .select("status")
-      .eq("id", params.id)
+      .eq("id", params.jobId)
       .single();
 
     // Update the job
     const { data: job, error: updateError } = await supabase
       .from("jobs")
       .update(validatedData)
-      .eq("id", params.id)
-      .select(`
+      .eq("id", params.jobId)
+      .select(
+        `
         *,
         customers(
           business_name,
@@ -210,26 +245,30 @@ export async function PUT(
           name,
           description
         )
-      `)
+      `,
+      )
       .single();
 
     if (updateError) {
       console.error("Error updating job:", updateError);
-      return NextResponse.json({ error: "Failed to update job" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update job" },
+        { status: 500 },
+      );
     }
 
     // Create job update record if status changed
     if (validatedData.status && validatedData.status !== currentJob?.status) {
       await supabase.from("job_updates").insert({
-        job_id: params.id,
+        job_id: params.jobId,
         updated_by: user.id,
         status: validatedData.status,
-        notes: `Status updated to ${validatedData.status}`
+        notes: `Status updated to ${validatedData.status}`,
       });
 
       // Create notifications for status changes
       const notifications = [];
-      
+
       // Notify customer
       if (job.customers) {
         const { data: customer } = await supabase
@@ -237,14 +276,14 @@ export async function PUT(
           .select("profile_id")
           .eq("id", job.customer_id)
           .single();
-        
+
         if (customer?.profile_id) {
           notifications.push({
             user_id: customer.profile_id,
             title: "Job Status Updated",
             message: `Your job "${job.title}" status has been updated to ${validatedData.status}`,
             type: "info",
-            related_job_id: job.id
+            related_job_id: job.id,
           });
         }
       }
@@ -256,7 +295,7 @@ export async function PUT(
           title: "Job Status Updated",
           message: `Job "${job.title}" status has been updated to ${validatedData.status}`,
           type: "info",
-          related_job_id: job.id
+          related_job_id: job.id,
         });
       }
 
@@ -267,30 +306,38 @@ export async function PUT(
     }
 
     return NextResponse.json({ job });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: "Validation error", 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Validation error",
+          details: error.errors,
+        },
+        { status: 400 },
+      );
     }
 
-    console.error("Error in PUT /api/jobs/[id]:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in PUT /api/jobs/[jobId]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
-// DELETE /api/jobs/[id] - Delete a specific job
+// DELETE /api/jobs/[jobId] - Delete a specific job
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -308,14 +355,17 @@ export async function DELETE(
 
     // Only admin and manager can delete jobs
     if (!["admin", "manager"].includes(profile.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
     }
 
     // Check if job exists
     const { data: job } = await supabase
       .from("jobs")
       .select("id, title, status")
-      .eq("id", params.id)
+      .eq("id", params.jobId)
       .single();
 
     if (!job) {
@@ -324,27 +374,35 @@ export async function DELETE(
 
     // Don't allow deletion of completed jobs
     if (job.status === "completed") {
-      return NextResponse.json({ 
-        error: "Cannot delete completed jobs" 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Cannot delete completed jobs",
+        },
+        { status: 400 },
+      );
     }
 
     // Delete the job (cascade will handle related records)
     const { error: deleteError } = await supabase
       .from("jobs")
       .delete()
-      .eq("id", params.id);
+      .eq("id", params.jobId);
 
     if (deleteError) {
       console.error("Error deleting job:", deleteError);
-      return NextResponse.json({ error: "Failed to delete job" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to delete job" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ message: "Job deleted successfully" });
-
   } catch (error) {
-    console.error("Error in DELETE /api/jobs/[id]:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in DELETE /api/jobs/[jobId]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -353,7 +411,7 @@ async function checkJobAccess(
   supabase: any,
   jobId: string,
   userId: string,
-  userRole: string
+  userRole: string,
 ): Promise<boolean> {
   // Admin and manager have access to all jobs
   if (["admin", "manager"].includes(userRole)) {
@@ -367,7 +425,7 @@ async function checkJobAccess(
       .select("id")
       .eq("profile_id", userId)
       .single();
-    
+
     if (!customer) return false;
 
     const { data: job } = await supabase
@@ -376,7 +434,7 @@ async function checkJobAccess(
       .eq("id", jobId)
       .eq("customer_id", customer.id)
       .single();
-    
+
     return !!job;
   }
 
@@ -387,7 +445,7 @@ async function checkJobAccess(
       .select("id")
       .eq("profile_id", userId)
       .single();
-    
+
     if (!teamMember) return false;
 
     const { data: assignment } = await supabase
@@ -396,7 +454,7 @@ async function checkJobAccess(
       .eq("job_id", jobId)
       .eq("team_member_id", teamMember.id)
       .single();
-    
+
     return !!assignment;
   }
 

@@ -8,16 +8,19 @@ const assignmentSchema = z.object({
   role: z.string().default("cleaner"),
 });
 
-// GET /api/jobs/[id]/assignments - Get job assignments
+// GET /api/jobs/[jobId]/assignments - Get job assignments
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -34,15 +37,24 @@ export async function GET(
     }
 
     // Check if user has access to this job
-    const hasAccess = await checkJobAccess(supabase, params.id, user.id, profile.role);
+    const hasAccess = await checkJobAccess(
+      supabase,
+      params.jobId,
+      user.id,
+      profile.role,
+    );
     if (!hasAccess) {
-      return NextResponse.json({ error: "Job not found or access denied" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Job not found or access denied" },
+        { status: 404 },
+      );
     }
 
     // Get job assignments
     const { data: assignments, error } = await supabase
       .from("job_assignments")
-      .select(`
+      .select(
+        `
         *,
         team_members(
           id,
@@ -60,33 +72,42 @@ export async function GET(
           id,
           full_name
         )
-      `)
-      .eq("job_id", params.id)
+      `,
+      )
+      .eq("job_id", params.jobId)
       .order("assigned_at", { ascending: true });
 
     if (error) {
       console.error("Error fetching job assignments:", error);
-      return NextResponse.json({ error: "Failed to fetch assignments" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch assignments" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ assignments: assignments || [] });
-
   } catch (error) {
-    console.error("Error in GET /api/jobs/[id]/assignments:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in GET /api/jobs/[jobId]/assignments:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
-// POST /api/jobs/[id]/assignments - Assign team member to job
+// POST /api/jobs/[jobId]/assignments - Assign team member to job
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -104,14 +125,17 @@ export async function POST(
 
     // Only admin and manager can assign team members
     if (!["admin", "manager"].includes(profile.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
     }
 
     // Check if job exists
     const { data: job } = await supabase
       .from("jobs")
       .select("id, title, status")
-      .eq("id", params.id)
+      .eq("id", params.jobId)
       .single();
 
     if (!job) {
@@ -120,9 +144,12 @@ export async function POST(
 
     // Don't allow assignment to completed or cancelled jobs
     if (["completed", "cancelled"].includes(job.status)) {
-      return NextResponse.json({ 
-        error: "Cannot assign team members to completed or cancelled jobs" 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Cannot assign team members to completed or cancelled jobs",
+        },
+        { status: 400 },
+      );
     }
 
     // Parse and validate request body
@@ -132,7 +159,8 @@ export async function POST(
     // Check if team member exists and is active
     const { data: teamMember } = await supabase
       .from("team_members")
-      .select(`
+      .select(
+        `
         id,
         is_active,
         profiles(
@@ -140,39 +168,47 @@ export async function POST(
           full_name,
           email
         )
-      `)
+      `,
+      )
       .eq("id", validatedData.team_member_id)
       .eq("is_active", true)
       .single();
 
     if (!teamMember) {
-      return NextResponse.json({ error: "Team member not found or inactive" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Team member not found or inactive" },
+        { status: 404 },
+      );
     }
 
     // Check if team member is already assigned to this job
     const { data: existingAssignment } = await supabase
       .from("job_assignments")
       .select("id")
-      .eq("job_id", params.id)
+      .eq("job_id", params.jobId)
       .eq("team_member_id", validatedData.team_member_id)
       .single();
 
     if (existingAssignment) {
-      return NextResponse.json({ 
-        error: "Team member is already assigned to this job" 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Team member is already assigned to this job",
+        },
+        { status: 400 },
+      );
     }
 
     // Create the assignment
     const { data: assignment, error: assignError } = await supabase
       .from("job_assignments")
       .insert({
-        job_id: params.id,
+        job_id: params.jobId,
         team_member_id: validatedData.team_member_id,
         role: validatedData.role,
-        assigned_by: user.id
+        assigned_by: user.id,
       })
-      .select(`
+      .select(
+        `
         *,
         team_members(
           id,
@@ -185,12 +221,16 @@ export async function POST(
             email
           )
         )
-      `)
+      `,
+      )
       .single();
 
     if (assignError) {
       console.error("Error creating assignment:", assignError);
-      return NextResponse.json({ error: "Failed to assign team member" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to assign team member" },
+        { status: 500 },
+      );
     }
 
     // Create notification for the assigned team member
@@ -200,22 +240,27 @@ export async function POST(
         title: "New Job Assignment",
         message: `You have been assigned to job: ${job.title}`,
         type: "info",
-        related_job_id: params.id
+        related_job_id: params.jobId,
       });
     }
 
     return NextResponse.json({ assignment }, { status: 201 });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: "Validation error", 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Validation error",
+          details: error.errors,
+        },
+        { status: 400 },
+      );
     }
 
-    console.error("Error in POST /api/jobs/[id]/assignments:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in POST /api/jobs/[jobId]/assignments:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -224,7 +269,7 @@ async function checkJobAccess(
   supabase: any,
   jobId: string,
   userId: string,
-  userRole: string
+  userRole: string,
 ): Promise<boolean> {
   // Admin and manager have access to all jobs
   if (["admin", "manager"].includes(userRole)) {
@@ -238,7 +283,7 @@ async function checkJobAccess(
       .select("id")
       .eq("profile_id", userId)
       .single();
-    
+
     if (!customer) return false;
 
     const { data: job } = await supabase
@@ -247,7 +292,7 @@ async function checkJobAccess(
       .eq("id", jobId)
       .eq("customer_id", customer.id)
       .single();
-    
+
     return !!job;
   }
 
@@ -258,7 +303,7 @@ async function checkJobAccess(
       .select("id")
       .eq("profile_id", userId)
       .single();
-    
+
     if (!teamMember) return false;
 
     const { data: assignment } = await supabase
@@ -267,7 +312,7 @@ async function checkJobAccess(
       .eq("job_id", jobId)
       .eq("team_member_id", teamMember.id)
       .single();
-    
+
     return !!assignment;
   }
 

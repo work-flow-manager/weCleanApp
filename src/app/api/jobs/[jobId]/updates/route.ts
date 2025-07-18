@@ -4,25 +4,32 @@ import { z } from "zod";
 
 // Validation schema for job updates
 const jobUpdateSchema = z.object({
-  status: z.enum(["scheduled", "in-progress", "completed", "cancelled", "issue"]).optional(),
+  status: z
+    .enum(["scheduled", "in-progress", "completed", "cancelled", "issue"])
+    .optional(),
   notes: z.string().min(1, "Notes are required"),
-  location: z.object({
-    latitude: z.number(),
-    longitude: z.number()
-  }).optional(),
+  location: z
+    .object({
+      latitude: z.number(),
+      longitude: z.number(),
+    })
+    .optional(),
   photos: z.array(z.string().url()).optional(),
 });
 
-// GET /api/jobs/[id]/updates - Get job updates
+// GET /api/jobs/[jobId]/updates - Get job updates
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -39,48 +46,66 @@ export async function GET(
     }
 
     // Check if user has access to this job
-    const hasAccess = await checkJobAccess(supabase, params.id, user.id, profile.role);
+    const hasAccess = await checkJobAccess(
+      supabase,
+      params.jobId,
+      user.id,
+      profile.role,
+    );
     if (!hasAccess) {
-      return NextResponse.json({ error: "Job not found or access denied" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Job not found or access denied" },
+        { status: 404 },
+      );
     }
 
     // Get job updates
     const { data: updates, error } = await supabase
       .from("job_updates")
-      .select(`
+      .select(
+        `
         *,
         profiles(
           id,
           full_name,
           avatar_url
         )
-      `)
-      .eq("job_id", params.id)
+      `,
+      )
+      .eq("job_id", params.jobId)
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching job updates:", error);
-      return NextResponse.json({ error: "Failed to fetch updates" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch updates" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ updates: updates || [] });
-
   } catch (error) {
-    console.error("Error in GET /api/jobs/[id]/updates:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in GET /api/jobs/[jobId]/updates:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
-// POST /api/jobs/[id]/updates - Create job update
+// POST /api/jobs/[jobId]/updates - Create job update
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -98,13 +123,24 @@ export async function POST(
 
     // Only admin, manager, and team can create updates
     if (!["admin", "manager", "team"].includes(profile.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      );
     }
 
     // Check if user has access to this job
-    const hasAccess = await checkJobAccess(supabase, params.id, user.id, profile.role);
+    const hasAccess = await checkJobAccess(
+      supabase,
+      params.jobId,
+      user.id,
+      profile.role,
+    );
     if (!hasAccess) {
-      return NextResponse.json({ error: "Job not found or access denied" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Job not found or access denied" },
+        { status: 404 },
+      );
     }
 
     // Parse and validate request body
@@ -121,26 +157,31 @@ export async function POST(
     const { data: update, error: updateError } = await supabase
       .from("job_updates")
       .insert({
-        job_id: params.id,
+        job_id: params.jobId,
         updated_by: user.id,
         status: validatedData.status,
         notes: validatedData.notes,
         location: locationPoint,
-        photos: validatedData.photos || []
+        photos: validatedData.photos || [],
       })
-      .select(`
+      .select(
+        `
         *,
         profiles(
           id,
           full_name,
           avatar_url
         )
-      `)
+      `,
+      )
       .single();
 
     if (updateError) {
       console.error("Error creating job update:", updateError);
-      return NextResponse.json({ error: "Failed to create update" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create update" },
+        { status: 500 },
+      );
     }
 
     // Update job status if provided
@@ -148,7 +189,7 @@ export async function POST(
       const { error: jobUpdateError } = await supabase
         .from("jobs")
         .update({ status: validatedData.status })
-        .eq("id", params.id);
+        .eq("id", params.jobId);
 
       if (jobUpdateError) {
         console.error("Error updating job status:", jobUpdateError);
@@ -158,13 +199,15 @@ export async function POST(
     // Get job details for notifications
     const { data: job } = await supabase
       .from("jobs")
-      .select(`
+      .select(
+        `
         title,
         customer_id,
         assigned_manager,
         customers(profile_id)
-      `)
-      .eq("id", params.id)
+      `,
+      )
+      .eq("id", params.jobId)
       .single();
 
     if (job) {
@@ -177,7 +220,7 @@ export async function POST(
           title: "Job Update",
           message: `Update on your job "${job.title}": ${validatedData.notes}`,
           type: "info",
-          related_job_id: params.id
+          related_job_id: params.jobId,
         });
       }
 
@@ -188,7 +231,7 @@ export async function POST(
           title: "Job Update",
           message: `Update on job "${job.title}": ${validatedData.notes}`,
           type: "info",
-          related_job_id: params.id
+          related_job_id: params.jobId,
         });
       }
 
@@ -199,17 +242,22 @@ export async function POST(
     }
 
     return NextResponse.json({ update }, { status: 201 });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: "Validation error", 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Validation error",
+          details: error.errors,
+        },
+        { status: 400 },
+      );
     }
 
-    console.error("Error in POST /api/jobs/[id]/updates:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Error in POST /api/jobs/[jobId]/updates:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -218,7 +266,7 @@ async function checkJobAccess(
   supabase: any,
   jobId: string,
   userId: string,
-  userRole: string
+  userRole: string,
 ): Promise<boolean> {
   // Admin and manager have access to all jobs
   if (["admin", "manager"].includes(userRole)) {
@@ -232,7 +280,7 @@ async function checkJobAccess(
       .select("id")
       .eq("profile_id", userId)
       .single();
-    
+
     if (!customer) return false;
 
     const { data: job } = await supabase
@@ -241,7 +289,7 @@ async function checkJobAccess(
       .eq("id", jobId)
       .eq("customer_id", customer.id)
       .single();
-    
+
     return !!job;
   }
 
@@ -252,7 +300,7 @@ async function checkJobAccess(
       .select("id")
       .eq("profile_id", userId)
       .single();
-    
+
     if (!teamMember) return false;
 
     const { data: assignment } = await supabase
@@ -261,7 +309,7 @@ async function checkJobAccess(
       .eq("job_id", jobId)
       .eq("team_member_id", teamMember.id)
       .single();
-    
+
     return !!assignment;
   }
 

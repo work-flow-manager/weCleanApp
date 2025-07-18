@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { InvoiceStats } from '@/types/invoice';

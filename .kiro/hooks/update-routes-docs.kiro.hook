@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Update Routes Documentation",
+  "description": "Automatically updates the routes.md documentation file whenever a new page is added to the application, ensuring that the routes documentation stays in sync with the actual application structure.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/app/**/page.tsx",
+      "src/app/**/page.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new page file has been created or modified in the application. Please update the routes documentation to reflect this change:\n\n1. Scan the entire `src/app` directory structure to identify all page routes\n2. Read the current `.kiro/steering/routes.md` file\n3. For each new route found that isn't documented in routes.md:\n   - Add it to the appropriate section in the routes table\n   - Use the directory structure to determine the route path\n   - Add a placeholder description like \"[New Route] - Description needed\"\n   - Set access to \"TBD\" if it can't be determined from context\n4. Preserve all existing route information (descriptions, access levels) for routes that are already documented\n5. Maintain the formatting and structure of the existing routes.md file\n6. If a new section is needed (e.g., a new group of related routes), create it following the existing pattern\n7. Update the file without removing any existing documentation\n\nRemember to:\n- Handle internationalization correctly (routes under `[locale]`)\n- Identify API routes separately from page routes\n- Maintain the table format for consistency\n- Group related routes together in the appropriate sections\n- Consider the route's location and naming to infer its purpose when possible"
+  }
+}
