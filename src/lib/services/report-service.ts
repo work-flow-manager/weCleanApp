@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import {
   ReportTemplate,
   ReportGenerationOptions,
@@ -17,7 +17,7 @@ export class ReportService {
    */
   static async getReportTemplates(businessId: string): Promise<ReportTemplate[]> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('report_templates')
@@ -42,7 +42,7 @@ export class ReportService {
    */
   static async getReportTemplate(templateId: string): Promise<ReportTemplate | null> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('report_templates')
@@ -70,7 +70,7 @@ export class ReportService {
     template: CreateReportTemplateRequest
   ): Promise<ReportTemplate | null> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('report_templates')
@@ -106,7 +106,7 @@ export class ReportService {
     template: UpdateReportTemplateRequest
   ): Promise<ReportTemplate | null> {
     try {
-      const supabase = createClient();
+      
       
       const updateData: any = {
         updated_at: new Date().toISOString()
@@ -142,7 +142,7 @@ export class ReportService {
    */
   static async deleteReportTemplate(templateId: string): Promise<boolean> {
     try {
-      const supabase = createClient();
+      
       
       const { error } = await supabase
         .from('report_templates')
@@ -200,7 +200,7 @@ export class ReportService {
    */
   static async getSavedReports(businessId: string): Promise<SavedReport[]> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('saved_reports')
@@ -225,7 +225,7 @@ export class ReportService {
    */
   static async deleteSavedReport(reportId: string): Promise<boolean> {
     try {
-      const supabase = createClient();
+      
       
       const { error } = await supabase
         .from('saved_reports')

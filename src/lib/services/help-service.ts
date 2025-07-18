@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import {
   HelpTopic,
   HelpCategory,
@@ -20,7 +20,7 @@ export class HelpService {
    */
   static async getAllTopics(): Promise<HelpTopic[]> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('help_topics')
@@ -44,7 +44,7 @@ export class HelpService {
    */
   static async getAllCategories(): Promise<HelpCategory[]> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('help_categories')
@@ -68,7 +68,7 @@ export class HelpService {
    */
   static async getTopicById(topicId: string): Promise<HelpTopic | null> {
     try {
-      const supabase = createClient();
+      
       
       const { data, error } = await supabase
         .from('help_topics')

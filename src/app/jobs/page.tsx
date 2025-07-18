@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Metadata } from "next";
-import { JobsList } from "@/components/jobs/JobsList";
+import JobsList from "@/components/jobs/JobsList";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";

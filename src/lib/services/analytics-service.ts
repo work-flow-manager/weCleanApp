@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import {
   AnalyticsFilters,
   AnalyticsData,
@@ -63,7 +63,7 @@ export class AnalyticsService {
     filters: AnalyticsFilters
   ): Promise<BusinessOverviewAnalytics> {
     try {
-      const supabase = createClient();
+      
       
       // Get current period data
       const { data: currentData } = await supabase.rpc('get_business_overview', {
@@ -216,7 +216,7 @@ export class AnalyticsService {
     filters: AnalyticsFilters
   ): Promise<TeamPerformanceAnalytics> {
     try {
-      const supabase = createClient();
+      
       
       // Get team member performance data
       const { data: teamData } = await supabase.rpc('get_team_performance', {

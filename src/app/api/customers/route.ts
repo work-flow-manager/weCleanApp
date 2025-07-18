@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
           )
         `)
         .eq("company_id", companyId)
-        .order("business_name", { ascending: true, nullsLast: true });
+        .order("business_name", { ascending: true, nullsFirst: false });
 
       if (error) {
         console.error("Error fetching customers:", error);

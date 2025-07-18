@@ -5,17 +5,13 @@ export async function POST(request: NextRequest) {
   try {
     const requestUrl = new URL(request.url)
     const body = await request.json()
-    const { email, password, rememberMe } = body
+    const { email, password } = body
     
     const supabase = await createClient()
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        // Set session expiry based on remember me option
-        expiresIn: rememberMe ? 30 * 24 * 60 * 60 : 8 * 60 * 60, // 30 days or 8 hours
-      }
     })
 
     if (error) {

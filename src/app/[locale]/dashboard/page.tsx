@@ -8,16 +8,16 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function LocalizedDashboardPage() {
   const t = useTranslations();
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   
   // Redirect to role-specific dashboard
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!loading && user) {
       router.push(`/dashboard/${user.role}`);
-    } else if (!isLoading && !user) {
+    } else if (!loading && !user) {
       router.push("/login");
     }
-  }, [user, isLoading, router]);
+  }, [user, loading, router]);
   
   return (
     <div className="flex items-center justify-center min-h-screen">

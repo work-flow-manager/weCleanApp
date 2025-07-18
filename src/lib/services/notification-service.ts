@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { 
   Notification, 
   NotificationType, 
@@ -16,7 +16,7 @@ export class NotificationService {
    */
   static async createNotification(data: CreateNotificationRequest): Promise<Notification | null> {
     try {
-      const supabase = createClient();
+      
       
       const { data: notification, error } = await supabase
         .from('notifications')
@@ -50,7 +50,7 @@ export class NotificationService {
    */
   static async markAsRead(notificationId: string): Promise<boolean> {
     try {
-      const supabase = createClient();
+      
       
       const { error } = await supabase
         .from('notifications')
@@ -74,7 +74,7 @@ export class NotificationService {
    */
   static async markAllAsRead(userId: string): Promise<boolean> {
     try {
-      const supabase = createClient();
+      
       
       const { error } = await supabase
         .from('notifications')
@@ -104,7 +104,7 @@ export class NotificationService {
     includeRead: boolean = true
   ): Promise<{ notifications: Notification[], total: number, unread: number }> {
     try {
-      const supabase = createClient();
+      
       
       // Get total count of notifications
       const { count: total, error: countError } = await supabase
@@ -159,7 +159,7 @@ export class NotificationService {
    */
   static async deleteNotification(notificationId: string): Promise<boolean> {
     try {
-      const supabase = createClient();
+      
       
       const { error } = await supabase
         .from('notifications')
