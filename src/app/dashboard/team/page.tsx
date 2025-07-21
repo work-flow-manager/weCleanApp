@@ -438,7 +438,7 @@ function TeamDashboardContent() {
                     <Progress 
                       value={(currentJob.checklist.filter(t => t.completed).length / currentJob.checklist.length) * 100} 
                       className="h-2 bg-pink-100" 
-                      indicatorClassName="bg-pink-500" 
+                       
                     />
                   </div>
                   
@@ -517,7 +517,7 @@ function TeamDashboardContent() {
                     <div className="text-sm font-medium">Jobs Completed</div>
                     <div className="text-sm font-medium">{todayStats.jobsCompleted}/{todayStats.jobsCompleted + todayStats.jobsRemaining}</div>
                   </div>
-                  <Progress value={(todayStats.jobsCompleted / (todayStats.jobsCompleted + todayStats.jobsRemaining)) * 100} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                  <Progress value={(todayStats.jobsCompleted / (todayStats.jobsCompleted + todayStats.jobsRemaining)) * 100} className="h-2 bg-pink-100"  />
                 </div>
                 
                 <div className="space-y-2">
@@ -525,7 +525,7 @@ function TeamDashboardContent() {
                     <div className="text-sm font-medium">Hours Worked</div>
                     <div className="text-sm font-medium">{todayStats.hoursWorked}/8h</div>
                   </div>
-                  <Progress value={(todayStats.hoursWorked / 8) * 100} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                  <Progress value={(todayStats.hoursWorked / 8) * 100} className="h-2 bg-pink-100"  />
                 </div>
                 
                 <div className="space-y-2">
@@ -533,7 +533,7 @@ function TeamDashboardContent() {
                     <div className="text-sm font-medium">Efficiency</div>
                     <div className="text-sm font-medium">{todayStats.efficiency}%</div>
                   </div>
-                  <Progress value={todayStats.efficiency} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                  <Progress value={todayStats.efficiency} className="h-2 bg-pink-100"  />
                 </div>
               </CardContent>
             </Card>

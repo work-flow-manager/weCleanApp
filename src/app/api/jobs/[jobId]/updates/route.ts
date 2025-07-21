@@ -17,6 +17,18 @@ const jobUpdateSchema = z.object({
   photos: z.array(z.string().url()).optional(),
 });
 
+// Define types for job data
+interface Customer {
+  profile_id: string;
+}
+
+interface Job {
+  title: string;
+  customer_id: string;
+  assigned_manager?: string;
+  customers: Customer | Customer[] | null;
+}
+
 // GET /api/jobs/[jobId]/updates - Get job updates
 export async function GET(
   request: NextRequest,
@@ -214,9 +226,19 @@ export async function POST(
       const notifications = [];
 
       // Notify customer
-      if (job.customers?.profile_id) {
+      let customerId: string | undefined = undefined;
+      
+      if (job.customers) {
+        if (Array.isArray(job.customers)) {
+          customerId = job.customers[0]?.profile_id;
+        } else {
+          customerId = (job.customers as Customer).profile_id;
+        }
+      }
+        
+      if (customerId) {
         notifications.push({
-          user_id: job.customers.profile_id,
+          user_id: customerId,
           title: "Job Update",
           message: `Update on your job "${job.title}": ${validatedData.notes}`,
           type: "info",
@@ -247,7 +269,7 @@ export async function POST(
       return NextResponse.json(
         {
           error: "Validation error",
-          details: error.errors,
+          details: error.format(),
         },
         { status: 400 },
       );

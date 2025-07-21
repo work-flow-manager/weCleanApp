@@ -50,7 +50,10 @@ export function MainLayout({
               <span className="sr-only">Toggle sidebar</span>
             </Button>
             <div className="text-lg font-semibold">
-              {pathname.split('/').pop()?.charAt(0).toUpperCase() + pathname.split('/').pop()?.slice(1) || 'Dashboard'}
+              {(() => {
+                const lastSegment = pathname.split('/').pop() || '';
+                return lastSegment ? lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1) : 'Dashboard';
+              })()}
             </div>
           </div>
         </header>

@@ -1,6 +1,24 @@
 import { supabase } from './client';
 
-export async function getTeamMembers() {
+// Define proper types for the team member data
+interface TeamMemberProfile {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+}
+
+interface TeamMember {
+  id: string;
+  profiles: TeamMemberProfile;
+}
+
+interface TeamMemberResponse {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
+export async function getTeamMembers(): Promise<TeamMemberResponse[]> {
   try {
     const { data, error } = await supabase
       .from('team_members')
@@ -18,10 +36,13 @@ export async function getTeamMembers() {
       throw error;
     }
 
-    return data.map(member => ({
+    // Cast data to the correct type
+    const typedData = data as unknown as TeamMember[];
+
+    return typedData.map(member => ({
       id: member.id,
-      name: member.profiles?.full_name || 'Unknown',
-      avatar: member.profiles?.avatar_url
+      name: member.profiles ? member.profiles.full_name : 'Unknown',
+      avatar: member.profiles ? member.profiles.avatar_url || undefined : undefined
     }));
   } catch (error) {
     console.error('Error fetching team members:', error);

@@ -69,7 +69,7 @@ export function GuidedWorkflow({ workflow, onComplete, className }: GuidedWorkfl
     <Card className={cn("w-full shadow-sm border-pink-100", className)}>
       <CardHeader className="bg-gradient-to-r from-pink-50 to-pink-100/50">
         <CardTitle className="text-xl font-semibold text-gray-800">{workflow.title}</CardTitle>
-        <Progress value={progress} className="h-2 bg-gray-200" indicatorClassName="bg-pink-500" />
+        <Progress value={progress} className="h-2 bg-gray-200" />
         <div className="text-sm text-gray-500 mt-1">
           Step {currentStepIndex + 1} of {workflow.steps.length}
         </div>

@@ -124,7 +124,7 @@ export function TutorialProgress({
                 {completedTutorials} of {totalTutorials} completed
               </span>
             </div>
-            <Progress value={overallProgress} className="h-2 bg-gray-200" indicatorClassName="bg-pink-500" />
+            <Progress value={overallProgress} className="h-2 bg-gray-200" />
           </div>
           
           {/* Tutorial list */}
@@ -176,8 +176,7 @@ export function TutorialProgress({
                   
                   <Progress 
                     value={tutorial.progress} 
-                    className="h-1.5 bg-gray-200" 
-                    indicatorClassName={tutorial.completed ? "bg-green-500" : "bg-pink-500"} 
+                    className={`h-1.5 bg-gray-200 ${tutorial.completed ? "[&>div]:bg-green-500" : "[&>div]:bg-pink-500"}`}
                   />
                 </div>
                 

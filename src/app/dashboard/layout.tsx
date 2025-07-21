@@ -89,6 +89,22 @@ export default function DashboardLayout({
     },
   ];
 
+  // Function to get page title from pathname
+  const getPageTitle = () => {
+    if (pathname === "/dashboard") {
+      return "Dashboard";
+    }
+    
+    const pathSegments = pathname.split("/");
+    const lastSegment = pathSegments.pop() || "";
+    
+    if (lastSegment) {
+      return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1);
+    }
+    
+    return "Dashboard";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
       {/* Mobile Header */}
@@ -316,10 +332,7 @@ export default function DashboardLayout({
           {/* Desktop Header */}
           <header className="hidden lg:flex sticky top-0 z-10 h-16 items-center justify-between px-6 bg-white/80 backdrop-blur-sm border-b border-gray-200/50 dark:bg-gray-900/80 dark:border-gray-800/50">
             <h1 className="text-xl font-semibold">
-              {pathname === "/dashboard"
-                ? "Dashboard"
-                : pathname.split("/").pop()?.charAt(0).toUpperCase() +
-                  pathname.split("/").pop()?.slice(1)}
+              {getPageTitle()}
             </h1>
             <div className="flex items-center gap-4">
               <ThemeToggle />

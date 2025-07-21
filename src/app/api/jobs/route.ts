@@ -129,12 +129,18 @@ export async function GET(request: NextRequest) {
         .single();
       
       if (teamMember) {
-        query = query.in("id", 
-          supabase
-            .from("job_assignments")
-            .select("job_id")
-            .eq("team_member_id", teamMember.id)
-        );
+        // Get job IDs assigned to this team member first
+        const { data: assignments } = await supabase
+          .from("job_assignments")
+          .select("job_id")
+          .eq("team_member_id", teamMember.id);
+        
+        if (assignments && assignments.length > 0) {
+          const jobIds = assignments.map(assignment => assignment.job_id);
+          query = query.in("id", jobIds);
+        } else {
+          return NextResponse.json({ jobs: [], total: 0 });
+        }
       } else {
         return NextResponse.json({ jobs: [], total: 0 });
       }
@@ -155,12 +161,18 @@ export async function GET(request: NextRequest) {
       query = query.eq("customer_id", customerId);
     }
     if (teamMemberId && (profile.role === "admin" || profile.role === "manager")) {
-      query = query.in("id", 
-        supabase
-          .from("job_assignments")
-          .select("job_id")
-          .eq("team_member_id", teamMemberId)
-      );
+      // Get job IDs assigned to the specified team member
+      const { data: assignments } = await supabase
+        .from("job_assignments")
+        .select("job_id")
+        .eq("team_member_id", teamMemberId);
+      
+      if (assignments && assignments.length > 0) {
+        const jobIds = assignments.map(assignment => assignment.job_id);
+        query = query.in("id", jobIds);
+      } else {
+        return NextResponse.json({ jobs: [], total: 0 });
+      }
     }
 
     const { data: jobs, error, count } = await query;
@@ -305,7 +317,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ 
         error: "Validation error", 
-        details: error.errors 
+        details: error.format() 
       }, { status: 400 });
     }
 

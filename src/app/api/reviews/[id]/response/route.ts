@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { CreateReviewResponseRequest } from '@/types/review';
 
 // POST /api/reviews/[id]/response - Respond to a review
@@ -10,7 +8,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,7 +20,7 @@ export async function POST(
     
     // Fetch the review
     const { data: review, error: fetchError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select('id, job_id, customer_id')
       .eq('id', reviewId)
       .single();
@@ -86,7 +84,7 @@ export async function POST(
     
     // Fetch the complete review with the new response
     const { data: completeReview, error: fetchCompleteError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select(`
         *,
         customers:customer_id (*),

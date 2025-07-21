@@ -9,7 +9,7 @@ import { RatingSummary } from './rating-summary';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-import { Pagination } from '@/components/ui/pagination';
+import { CustomPagination } from '@/components/ui/custom-pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { AlertCircle } from 'lucide-react';
 
@@ -229,7 +229,7 @@ export function ReviewList({
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-6">
-              <Pagination
+              <CustomPagination
                 currentPage={page}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}

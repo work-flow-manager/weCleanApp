@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { UpdateReviewRequest, MAX_RATING, MIN_RATING, MAX_REVIEW_TEXT_LENGTH } from '@/types/review';
 
 // GET /api/reviews/[id] - Get a specific review by ID
@@ -10,7 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,7 +20,7 @@ export async function GET(
     
     // Fetch the review with related data
     const { data: review, error } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select(`
         *,
         customers:customer_id (*),
@@ -52,7 +50,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -64,7 +62,7 @@ export async function PUT(
     
     // Fetch the review to check ownership
     const { data: review, error: fetchError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select('id, customer_id')
       .eq('id', reviewId)
       .single();
@@ -114,7 +112,7 @@ export async function PUT(
     
     // Update the review
     const { data: updatedReview, error: updateError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .update({
         rating: requestData.rating,
         review_text: requestData.review_text,
@@ -131,7 +129,7 @@ export async function PUT(
     
     // Fetch the complete updated review with related data
     const { data: completeReview, error: fetchCompleteError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select(`
         *,
         customers:customer_id (*),
@@ -158,7 +156,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -170,7 +168,7 @@ export async function DELETE(
     
     // Fetch the review to check ownership
     const { data: review, error: fetchError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select('id, customer_id')
       .eq('id', reviewId)
       .single();
@@ -203,7 +201,7 @@ export async function DELETE(
     
     // Delete the review
     const { error: deleteError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .delete()
       .eq('id', reviewId);
       

@@ -15,8 +15,23 @@ import { JobClusterMap } from "@/components/map";
 import { MapIcon, Calendar, Filter } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Define the job type to match the JobClusterMap component's expected type
+interface Job {
+  id: string;
+  title: string;
+  address: string;
+  date: string;
+  time: string;
+  status: "scheduled" | "in-progress" | "completed" | "cancelled" | "issue";
+  customer: string;
+  location: {
+    longitude: number;
+    latitude: number;
+  };
+}
+
 // Sample data for demonstration
-const sampleJobs = [
+const sampleJobs: Job[] = [
   {
     id: "job1",
     title: "Regular Cleaning - Johnson Residence",
@@ -120,8 +135,8 @@ const officeLocation = {
 export default function JobsMapPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [jobs, setJobs] = useState(sampleJobs);
-  const [filteredJobs, setFilteredJobs] = useState(sampleJobs);
+  const [jobs, setJobs] = useState<Job[]>(sampleJobs);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>(sampleJobs);
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showOptimalRoute, setShowOptimalRoute] = useState(false);

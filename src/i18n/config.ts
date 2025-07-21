@@ -8,5 +8,6 @@ export default getRequestConfig(async ({ locale }) => {
     messages,
     timeZone: 'UTC',
     now: new Date(),
+    locale: locale as string, // Ensure locale is treated as a non-undefined string
   };
 });

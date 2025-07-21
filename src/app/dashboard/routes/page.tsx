@@ -81,22 +81,22 @@ const sampleTeamMembers = [
   {
     id: "team1",
     name: "Alice Johnson",
-    avatar: null
+    avatar: undefined
   },
   {
     id: "team2",
     name: "Bob Williams",
-    avatar: null
+    avatar: undefined
   },
   {
     id: "team3",
     name: "Carol Davis",
-    avatar: null
+    avatar: undefined
   },
   {
     id: "team4",
     name: "David Wilson",
-    avatar: null
+    avatar: undefined
   }
 ];
 

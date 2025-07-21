@@ -112,7 +112,7 @@ const config = {
   },
   plugins: [
     require("tailwindcss-animate"),
-    function({ addUtilities }) {
+    function({ addUtilities }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
       const newUtilities = {
         '.backdrop-blur-xs': {
           '--tw-backdrop-blur': 'blur(2px)',

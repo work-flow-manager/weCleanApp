@@ -1,11 +1,27 @@
-import { createSharedPathnamesNavigation } from 'next-intl/navigation';
 import { locales, defaultLocale } from './settings';
+import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation';
+import Link from 'next/link';
+import { redirect as nextRedirect } from 'next/navigation';
 
-// Create shared navigation functions
-export const { Link, redirect, usePathname, useRouter } = createSharedPathnamesNavigation({
-  locales,
-  localePrefix: 'as-needed'
-});
+// Re-export Next.js navigation functions with wrappers for i18n
+export { Link };
+
+// Wrapper for useRouter to handle i18n
+export function useRouter() {
+  const router = useNextRouter();
+  return router;
+}
+
+// Wrapper for usePathname to handle i18n
+export function usePathname() {
+  const pathname = useNextPathname();
+  return pathname;
+}
+
+// Wrapper for redirect to handle i18n
+export function redirect(path: string) {
+  return nextRedirect(path);
+}
 
 // Function to get the localized path
 export function getLocalizedPath(path: string, locale: string): string {

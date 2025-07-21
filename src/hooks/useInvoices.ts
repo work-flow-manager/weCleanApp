@@ -7,8 +7,7 @@ import {
   InvoicePayment, 
   CreateInvoiceRequest,
   UpdateInvoiceRequest,
-  InvoiceFilters,
-  InvoiceStatus
+  InvoiceFilters
 } from '@/types/invoice';
 import { 
   processPayment, 
@@ -16,6 +15,9 @@ import {
   CreditCardInfo, 
   PaymentRequest 
 } from '@/lib/payment-gateway';
+
+// Define InvoiceStatus type alias based on the status field in Invoice type
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
 /**
  * Custom hook for managing invoices

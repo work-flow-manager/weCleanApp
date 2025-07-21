@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { HelpTooltip as HelpTooltipType } from '@/types/help';
-import { useTooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,34 +61,34 @@ export function HelpTooltip({ tooltip, onDismiss, className }: HelpTooltipProps)
   // Create a portal to render the tooltip
   return (
     <TooltipProvider>
-      <div className={cn("help-tooltip", className)}>
-        <TooltipTrigger asChild>
-          <div className="absolute inset-0 pointer-events-none" />
-        </TooltipTrigger>
-        <TooltipContent
-          side={tooltip.position || 'top'}
-          className="p-4 max-w-xs"
-          open={isOpen}
-          onOpenChange={setIsOpen}
-        >
-          {tooltip.title && (
-            <div className="font-medium mb-1">{tooltip.title}</div>
-          )}
-          <div className="text-sm">{tooltip.content}</div>
-          
-          {tooltip.dismissable !== false && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-1 right-1 h-6 w-6 p-0"
-              onClick={handleDismiss}
-            >
-              <X className="h-3 w-3" />
-              <span className="sr-only">Dismiss</span>
-            </Button>
-          )}
-        </TooltipContent>
-      </div>
+      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
+        <div className={cn("help-tooltip", className)}>
+          <TooltipTrigger asChild>
+            <div className="absolute inset-0 pointer-events-none" />
+          </TooltipTrigger>
+          <TooltipContent
+            side={tooltip.position || 'top'}
+            className="p-4 max-w-xs"
+          >
+            {tooltip.title && (
+              <div className="font-medium mb-1">{tooltip.title}</div>
+            )}
+            <div className="text-sm">{tooltip.content}</div>
+            
+            {tooltip.dismissable !== false && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-1 right-1 h-6 w-6 p-0"
+                onClick={handleDismiss}
+              >
+                <X className="h-3 w-3" />
+                <span className="sr-only">Dismiss</span>
+              </Button>
+            )}
+          </TooltipContent>
+        </div>
+      </Tooltip>
     </TooltipProvider>
   );
 }

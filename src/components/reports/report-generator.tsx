@@ -31,49 +31,74 @@ type FormValues = z.infer<typeof reportGeneratorSchema>;
 
 interface ReportGeneratorProps {
   template: ReportTemplate;
-  onGenerate: (options: ReportGenerationOptions) => Promise<void>;
-  onCancel: () => void;
-  isGenerating?: boolean;
+  onGenerate?: (report: any) => void;
+  onCancel?: () => void;
 }
 
-export function ReportGenerator({
-  template,
-  onGenerate,
-  onCancel,
-  isGenerating = false
-}: ReportGeneratorProps) {
+export function ReportGenerator({ template, onGenerate, onCancel }: ReportGeneratorProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
   // Initialize form with defaults
   const form = useForm<FormValues>({
-    resolver: zodResolver(reportGeneratorSchema),
     defaultValues: {
       name: `${template.name} - ${new Date().toLocaleDateString()}`,
       format: 'pdf',
       includeCharts: true
     }
   });
-  
+
   // Handle form submission
-  const handleSubmit = async (values: FormValues) => {
-    const options: ReportGenerationOptions = {
-      templateId: template.id,
-      name: values.name,
-      format: values.format,
-      sections: template.sections,
-      filters: template.filters,
-      includeCharts: values.includeCharts
-    };
+  const onSubmit = async (data: FormValues) => {
+    setIsGenerating(true);
+    setError(null);
     
-    await onGenerate(options);
+    try {
+      // Prepare the generation options
+      const options: ReportGenerationOptions = {
+        templateId: template.id,
+        name: data.name,
+        format: data.format,
+        includeCharts: data.includeCharts,
+        sections: template.sections || [],
+        filters: template.filters || []
+      };
+      
+      // Call the API to generate the report
+      const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(options)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+      
+      const result = await response.json();
+      
+      // Call the onGenerate callback with the result
+      if (onGenerate) {
+        onGenerate(result);
+      }
+    } catch (err) {
+      console.error('Error generating report:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while generating the report');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Generate Report</CardTitle>
+        <CardTitle>Generate Report: {template.name}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
@@ -95,8 +120,8 @@ export function ReportGenerator({
                 <FormItem>
                   <FormLabel>Format</FormLabel>
                   <Select
-                    value={field.value}
                     onValueChange={field.onChange}
+                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -104,9 +129,9 @@ export function ReportGenerator({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="pdf">PDF</SelectItem>
-                      <SelectItem value="csv">CSV</SelectItem>
-                      <SelectItem value="excel">Excel</SelectItem>
+                      <SelectItem value="pdf">PDF Document</SelectItem>
+                      <SelectItem value="csv">CSV Spreadsheet</SelectItem>
+                      <SelectItem value="excel">Excel Spreadsheet</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -135,11 +160,24 @@ export function ReportGenerator({
               )}
             />
             
-            <div className="pt-4 flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isGenerating}>
+            {error && (
+              <div className="text-sm font-medium text-destructive">{error}</div>
+            )}
+            
+            <div className="flex justify-end space-x-2">
+              {onCancel && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                type="submit"
+                disabled={isGenerating}
+              >
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

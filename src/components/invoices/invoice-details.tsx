@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useInvoices } from '@/hooks/useInvoices';
-import { Invoice, InvoiceItem, InvoicePayment, InvoiceStatus } from '@/types/invoice';
+import { Invoice, InvoiceItem, InvoicePayment } from '@/types/invoice';
 import { formatCurrency, formatDate, getInvoiceStatusText, getInvoiceStatusClass, calculateRemainingBalance, getDueDateText } from '@/lib/utils/invoiceUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -126,8 +126,8 @@ export function InvoiceDetails({ invoice: initialInvoice }: InvoiceDetailsProps)
             Back
           </Button>
           <h1 className="text-2xl font-bold">Invoice {invoice.invoice_number}</h1>
-          <Badge className={getInvoiceStatusClass(invoice.status as InvoiceStatus)}>
-            {getInvoiceStatusText(invoice.status as InvoiceStatus)}
+          <Badge className={getInvoiceStatusClass(invoice.status)}>
+            {getInvoiceStatusText(invoice.status)}
           </Badge>
         </div>
         
@@ -188,7 +188,7 @@ export function InvoiceDetails({ invoice: initialInvoice }: InvoiceDetailsProps)
               <span className="text-muted-foreground">Status:</span>
               <div className="flex items-center gap-1">
                 {getStatusIcon()}
-                <span>{getInvoiceStatusText(invoice.status as InvoiceStatus)}</span>
+                <span>{getInvoiceStatusText(invoice.status)}</span>
               </div>
             </div>
             

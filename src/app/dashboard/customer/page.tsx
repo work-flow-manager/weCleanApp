@@ -682,7 +682,7 @@ function CustomerDashboardContent() {
                     <div className="text-sm font-medium">This Month</div>
                     <div className="text-sm font-medium">$1,240</div>
                   </div>
-                  <Progress value={75} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                  <Progress value={75} className="h-2 bg-pink-100" />
                   <div className="text-xs text-muted-foreground">8 services completed</div>
                 </div>
                 

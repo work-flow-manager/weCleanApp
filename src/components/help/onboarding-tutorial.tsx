@@ -190,7 +190,7 @@ export function OnboardingTutorial({
           
           {currentStep && (
             <div className="space-y-4">
-              <Progress value={progress} className="h-2 bg-gray-200" indicatorClassName="bg-pink-500" />
+              <Progress value={progress} className="h-2 bg-gray-200" />
               
               <div className="text-sm text-gray-500">
                 Step {currentStepIndex + 1} of {selectedTutorial?.steps.length}

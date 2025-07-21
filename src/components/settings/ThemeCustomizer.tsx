@@ -572,7 +572,7 @@ export default function ThemeCustomizer({ className = "" }: ThemeCustomizerProps
               {savedThemes.length > 0 ? (
                 savedThemes.map((savedTheme) => (
                   <DropdownMenuItem 
-                    key={savedTheme.id}
+                    key={savedTheme.name}
                     onClick={() => loadTheme(savedTheme)}
                     className="flex justify-between"
                   >
@@ -586,7 +586,7 @@ export default function ThemeCustomizer({ className = "" }: ThemeCustomizerProps
                         className="h-4 w-4 text-muted-foreground hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteTheme(savedTheme.id as string);
+                          deleteTheme(savedTheme.name as string);
                           toast({
                             title: "Theme Deleted",
                             description: `"${savedTheme.name}" has been deleted.`,

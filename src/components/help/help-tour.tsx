@@ -81,33 +81,33 @@ export function HelpTour({ tour, onComplete, onSkip }: HelpTourProps) {
     if (!targetElement) return {};
     
     const rect = targetElement.getBoundingClientRect();
-    const position = step.position || 'bottom';
+    const dialogPosition = step.position || 'bottom';
     
-    switch (position) {
+    switch (dialogPosition) {
       case 'top':
         return {
-          position: 'absolute',
+          position: 'absolute' as const,
           top: `${rect.top - 10}px`,
           left: `${rect.left + rect.width / 2}px`,
           transform: 'translate(-50%, -100%)'
         };
       case 'right':
         return {
-          position: 'absolute',
+          position: 'absolute' as const,
           top: `${rect.top + rect.height / 2}px`,
           left: `${rect.right + 10}px`,
           transform: 'translateY(-50%)'
         };
       case 'bottom':
         return {
-          position: 'absolute',
+          position: 'absolute' as const,
           top: `${rect.bottom + 10}px`,
           left: `${rect.left + rect.width / 2}px`,
           transform: 'translateX(-50%)'
         };
       case 'left':
         return {
-          position: 'absolute',
+          position: 'absolute' as const,
           top: `${rect.top + rect.height / 2}px`,
           left: `${rect.left - 10}px`,
           transform: 'translate(-100%, -50%)'

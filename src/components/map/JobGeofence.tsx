@@ -112,7 +112,6 @@ export default function JobGeofence({
         source: sourceId,
         paint: {
           "circle-radius": ["get", "radius"],
-          "circle-radius-transition": { duration: 300 },
           "circle-opacity": 0.2,
           "circle-color": color,
         },
@@ -129,7 +128,6 @@ export default function JobGeofence({
         source: sourceId,
         paint: {
           "circle-radius": ["get", "radius"],
-          "circle-radius-transition": { duration: 300 },
           "circle-opacity": 0,
           "circle-stroke-width": 2,
           "circle-stroke-color": color,

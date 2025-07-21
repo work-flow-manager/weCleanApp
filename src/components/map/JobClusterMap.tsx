@@ -150,7 +150,13 @@ export default function JobClusterMap({
     // For this example, we'll simulate a simple nearest neighbor algorithm
     
     // Start with the starting location or the first job
-    const route = [];
+    interface RoutePoint {
+      longitude: number;
+      latitude: number;
+      name: string;
+    }
+    
+    const route: RoutePoint[] = [];
     
     if (startLocation) {
       route.push({

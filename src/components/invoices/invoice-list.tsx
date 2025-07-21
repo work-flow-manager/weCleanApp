@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useInvoices } from '@/hooks/useInvoices';
-import { Invoice, InvoiceFilters, InvoiceStatus } from '@/types/invoice';
+import { Invoice, InvoiceFilters } from '@/types/invoice';
 import { formatCurrency, formatDate, getInvoiceStatusText, getInvoiceStatusClass } from '@/lib/utils/invoiceUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -256,8 +256,8 @@ export function InvoiceList({ initialInvoices, customerId, jobId }: InvoiceListP
                     <TableCell>{formatDate(invoice.due_date)}</TableCell>
                     <TableCell>{formatCurrency(invoice.total_amount)}</TableCell>
                     <TableCell>
-                      <Badge className={getInvoiceStatusClass(invoice.status as InvoiceStatus)}>
-                        {getInvoiceStatusText(invoice.status as InvoiceStatus)}
+                      <Badge className={getInvoiceStatusClass(invoice.status)}>
+                        {getInvoiceStatusText(invoice.status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -299,7 +299,7 @@ export function InvoiceList({ initialInvoices, customerId, jobId }: InvoiceListP
               <PaginationItem>
                 <PaginationPrevious 
                   onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
+                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
               
@@ -308,7 +308,7 @@ export function InvoiceList({ initialInvoices, customerId, jobId }: InvoiceListP
               <PaginationItem>
                 <PaginationNext 
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
+                  className={page === totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>

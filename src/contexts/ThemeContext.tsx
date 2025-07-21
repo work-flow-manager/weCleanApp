@@ -20,6 +20,7 @@ export interface ThemeSettings {
   glassmorphism: boolean;
   darkMode: boolean;
   name?: string; // Optional theme name for saved themes
+  id?: string; // ID for saved themes from database
 }
 
 export interface ThemeContextType {
@@ -148,7 +149,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const { data } = await supabase
         .from('business_themes')
         .select('*')
-        .eq('business_id', user.business_id || user.id);
+        .eq('business_id', user.id);
         
       if (data) {
         setSavedThemes(data.map(item => ({
@@ -256,7 +257,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
     
     try {
-      const businessId = user.business_id || user.id;
+      const businessId = user.id;
       
       const { data, error } = await supabase
         .from('business_themes')
@@ -275,7 +276,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         // Add the new theme to the saved themes list
         setSavedThemes([...savedThemes, {
           ...theme,
-          id: data.id,
           name: name
         }]);
       }
