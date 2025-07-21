@@ -1,17 +1,15 @@
-"use client"
-
-import React from 'react';
-import { NotificationCenter } from '@/components/notifications';
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 export default function NotificationsPage() {
   return (
-    <div className="container py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-2">Notifications</h1>
-      <p className="text-muted-foreground mb-6">
-        View and manage your notifications
-      </p>
-      
-      <NotificationCenter />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Notifications</h1>
+      <div className="glass-card">
+        <p className="text-gray-600">
+          Notifications functionality will be implemented here.
+        </p>
+      </div>
     </div>
   );
 }
