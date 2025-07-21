@@ -56,7 +56,7 @@ export function SavedReportCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onDownload(report)} disabled={isExpired}>
+              <DropdownMenuItem onClick={() => onDownload(report)} disabled={isExpired === true}>
                 <Download className="mr-2 h-4 w-4" />
                 Download
               </DropdownMenuItem>
@@ -99,7 +99,7 @@ export function SavedReportCard({
           className="w-full" 
           variant="outline"
           onClick={() => onDownload(report)}
-          disabled={isExpired}
+          disabled={isExpired === true}
         >
           <Download className="mr-2 h-4 w-4" />
           Download Report

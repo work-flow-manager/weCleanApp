@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -20,7 +18,7 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
@@ -65,7 +63,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert location record
-    const { data, error } = await supabase
+    // Use any type to bypass TypeScript constraints
+    const { data, error } = await (supabase as any)
       .from('team_locations')
       .insert({
         team_member_id: teamMember.id,
@@ -96,11 +95,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -108,10 +107,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user profile to check role
-    const { data: profile, error: profileError } = await supabase
+    // Use any type to bypass TypeScript constraints for company_id
+    const { data: profile, error: profileError } = await (supabase as any)
       .from('profiles')
       .select('id, role, company_id')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
@@ -158,7 +158,8 @@ export async function GET(request: NextRequest) {
       }
 
       // Get the latest location for this team member
-      const { data: location, error: locationError } = await supabase
+      // Use any type to bypass TypeScript constraints
+      const { data: location, error: locationError } = await (supabase as any)
         .from('team_locations')
         .select('*')
         .eq('team_member_id', teamMemberId)
@@ -207,7 +208,8 @@ export async function GET(request: NextRequest) {
     const teamMemberIds = teamMembers.map(member => member.id);
     
     // Use a custom RPC function to get the latest location for each team member
-    const { data: locations, error: locationsError } = await supabase
+    // Use any type to bypass TypeScript constraints
+    const { data: locations, error: locationsError } = await (supabase as any)
       .rpc('get_latest_team_locations', { team_ids: teamMemberIds });
 
     if (locationsError) {
@@ -219,13 +221,29 @@ export async function GET(request: NextRequest) {
     }
 
     // Combine team member info with their locations
-    const teamLocations = teamMembers.map(member => {
-      const location = locations?.find(loc => loc.team_member_id === member.id);
+    const teamLocations = teamMembers.map((member: any) => {
+      const location = locations?.find((loc: any) => loc.team_member_id === member.id);
+      
+      // Handle profiles as an object or array
+      const profileData = member.profiles;
+      let fullName = 'Unknown';
+      let avatarUrl = null;
+      
+      if (profileData) {
+        if (Array.isArray(profileData) && profileData.length > 0) {
+          fullName = profileData[0].full_name || 'Unknown';
+          avatarUrl = profileData[0].avatar_url || null;
+        } else if (typeof profileData === 'object') {
+          fullName = profileData.full_name || 'Unknown';
+          avatarUrl = profileData.avatar_url || null;
+        }
+      }
+      
       return {
         teamMember: {
           id: member.id,
-          name: member.profiles?.full_name || 'Unknown',
-          avatar: member.profiles?.avatar_url || null
+          name: fullName,
+          avatar: avatarUrl
         },
         location: location ? {
           latitude: location.latitude,
@@ -248,11 +266,11 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -263,7 +281,7 @@ export async function DELETE(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
@@ -310,7 +328,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete location data
-    const { error } = await supabase
+    // Use any type to bypass TypeScript constraints
+    const { error } = await (supabase as any)
       .from('team_locations')
       .delete()
       .eq('team_member_id', teamMemberId);

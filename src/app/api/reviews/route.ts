@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { 
   CreateReviewRequest, 
   ReviewFilters, 
@@ -13,7 +11,7 @@ import {
 // GET /api/reviews - Get list of reviews with optional filtering
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -49,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Build query
-    let query = supabase.from('reviews').select(`
+    let query = supabase.from('job_reviews').select(`
       *,
       customers:customer_id (*),
       jobs:job_id (*),
@@ -117,7 +115,7 @@ export async function GET(request: NextRequest) {
 // POST /api/reviews - Create a new review
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -184,7 +182,7 @@ export async function POST(request: NextRequest) {
     
     // Check if user has already reviewed this job
     const { data: existingReview, error: reviewError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select('id')
       .eq('job_id', requestData.job_id)
       .eq('customer_id', job.customer_id)
@@ -196,7 +194,7 @@ export async function POST(request: NextRequest) {
     
     // Create the review
     const { data: review, error: createError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .insert({
         job_id: requestData.job_id,
         customer_id: job.customer_id,
@@ -213,7 +211,7 @@ export async function POST(request: NextRequest) {
     
     // Fetch the complete review with related data
     const { data: completeReview, error: fetchError } = await supabase
-      .from('reviews')
+      .from('job_reviews')
       .select(`
         *,
         customers:customer_id (*),

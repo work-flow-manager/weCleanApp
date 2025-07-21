@@ -214,7 +214,7 @@ export default function JobCompletionVerification({
               </div>
               
               {!isReadyToComplete && (
-                <Alert variant="warning" className="mt-4">
+                <Alert className="mt-4 border-amber-500 bg-amber-50 text-amber-800">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Verification Required</AlertTitle>
                   <AlertDescription>

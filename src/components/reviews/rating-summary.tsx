@@ -106,7 +106,7 @@ export function RatingSummary({
             {/* Rating Distribution */}
             <div className="flex-1 space-y-2 pt-4 md:pt-0">
               {[5, 4, 3, 2, 1].map(rating => {
-                const count = stats.rating_distribution[rating as keyof typeof stats.rating_distribution];
+                const count = stats.rating_distribution[rating.toString() as keyof typeof stats.rating_distribution];
                 const percentage = stats.total_reviews > 0 
                   ? Math.round((count / stats.total_reviews) * 100) 
                   : 0;

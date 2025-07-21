@@ -475,7 +475,7 @@ function ManagerDashboardContent() {
                       <div className="text-right">
                         <div className="text-sm font-medium">Efficiency</div>
                         <div className="text-xs text-muted-foreground">{member.efficiency}%</div>
-                        <Progress value={member.efficiency} className="w-20 h-2 mt-1 bg-pink-100" indicatorClassName="bg-pink-500" />
+                        <Progress value={member.efficiency} className="w-20 h-2 mt-1 bg-pink-100" />
                       </div>
                       <Badge className={
                         member.status === "on-job" ? "bg-blue-500" : 
@@ -511,7 +511,7 @@ function ManagerDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-2">91%</div>
-                <Progress value={91} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                <Progress value={91} className="h-2 bg-pink-100" />
                 <p className="text-xs text-muted-foreground mt-2">Above target of 85%</p>
               </CardContent>
             </Card>
@@ -525,7 +525,7 @@ function ManagerDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-2">9/12</div>
-                <Progress value={75} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                <Progress value={75} className="h-2 bg-pink-100" />
                 <p className="text-xs text-muted-foreground mt-2">3 jobs remaining</p>
               </CardContent>
             </Card>
@@ -539,7 +539,7 @@ function ManagerDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-2">4.7/5</div>
-                <Progress value={94} className="h-2 bg-pink-100" indicatorClassName="bg-pink-500" />
+                <Progress value={94} className="h-2 bg-pink-100" />
                 <p className="text-xs text-muted-foreground mt-2">Excellent performance</p>
               </CardContent>
             </Card>

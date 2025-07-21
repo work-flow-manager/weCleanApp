@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { RouteResult } from '@/lib/services/routeOptimization';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    // Use createClient without type constraints
+    const supabase = await createClient();
     
     // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -21,7 +20,7 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
@@ -60,13 +59,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create shared route record
-    const { data: sharedRoute, error: sharedRouteError } = await supabase
+    // Use any type to bypass TypeScript constraints
+    const { data: sharedRoute, error: sharedRouteError } = await (supabase as any)
       .from('shared_routes')
       .insert({
         name: name || `Route ${new Date().toLocaleDateString()}`,
         description: description || '',
         route_data: route,
-        created_by: session.user.id,
+        created_by: user.id,
         created_at: new Date().toISOString()
       })
       .select()
@@ -87,7 +87,8 @@ export async function POST(request: NextRequest) {
       shared_at: new Date().toISOString()
     }));
 
-    const { error: shareError } = await supabase
+    // Use any type to bypass TypeScript constraints
+    const { error: shareError } = await (supabase as any)
       .from('route_shares')
       .insert(teamMemberShares);
 
@@ -139,11 +140,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    // Use createClient without type constraints
+    const supabase = await createClient();
     
     // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -154,7 +156,7 @@ export async function GET(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
@@ -169,7 +171,8 @@ export async function GET(request: NextRequest) {
 
     if (routeId) {
       // Get specific route
-      let query = supabase
+      // Use any type to bypass TypeScript constraints
+      let query = (supabase as any)
         .from('shared_routes')
         .select(`
           id,
@@ -184,7 +187,7 @@ export async function GET(request: NextRequest) {
 
       // If not admin or manager, check if route is shared with user
       if (!['admin', 'manager'].includes(profile.role)) {
-        query = query.or(`created_by.eq.${session.user.id},route_shares.team_member_id.eq.${session.user.id}`);
+        query = query.or(`created_by.eq.${user.id},route_shares.team_member_id.eq.${user.id}`);
       }
 
       const { data: route, error: routeError } = await query.single();
@@ -198,7 +201,8 @@ export async function GET(request: NextRequest) {
       }
 
       // Get team members the route is shared with
-      const { data: shares, error: sharesError } = await supabase
+      // Use any type to bypass TypeScript constraints
+      const { data: shares, error: sharesError } = await (supabase as any)
         .from('route_shares')
         .select(`
           team_member_id,
@@ -223,7 +227,8 @@ export async function GET(request: NextRequest) {
       });
     } else {
       // Get all routes
-      let query = supabase
+      // Use any type to bypass TypeScript constraints
+      let query = (supabase as any)
         .from('shared_routes')
         .select(`
           id,
@@ -240,7 +245,7 @@ export async function GET(request: NextRequest) {
         const { data: teamMember, error: teamMemberError } = await supabase
           .from('team_members')
           .select('id')
-          .eq('profile_id', session.user.id)
+          .eq('profile_id', user.id)
           .single();
 
         if (teamMemberError) {
@@ -252,7 +257,8 @@ export async function GET(request: NextRequest) {
         }
 
         // Get routes shared with this team member
-        const { data: sharedRouteIds, error: sharedRouteIdsError } = await supabase
+        // Use any type to bypass TypeScript constraints
+        const { data: sharedRouteIds, error: sharedRouteIdsError } = await (supabase as any)
           .from('route_shares')
           .select('route_id')
           .eq('team_member_id', teamMember.id);
@@ -265,7 +271,7 @@ export async function GET(request: NextRequest) {
           );
         }
 
-        const routeIds = sharedRouteIds.map(share => share.route_id);
+        const routeIds = sharedRouteIds.map((share: any) => share.route_id);
         
         if (routeIds.length > 0) {
           query = query.in('id', routeIds);

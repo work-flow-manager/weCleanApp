@@ -57,16 +57,8 @@ export function NotificationDeliverySystem() {
 
         // Focus or open window with the appropriate URL
         if (url) {
-          const windowClients = await swRegistration.getNotifications();
-          const matchingClient = windowClients.find(
-            (client) => client.url === url,
-          );
-
-          if (matchingClient) {
-            matchingClient.focus();
-          } else {
-            window.open(url, "_blank");
-          }
+          // Just open the URL in a new tab
+          window.open(url, "_blank");
         }
       }
     };
@@ -88,19 +80,9 @@ export function NotificationDeliverySystem() {
   useEffect(() => {
     if (!swRegistration || !user) return;
 
-    // Set up background sync for offline notifications
-    const setupBackgroundSync = async () => {
-      try {
-        if ("SyncManager" in window) {
-          await swRegistration.sync.register("sync-notifications");
-          console.log("Background sync registered for notifications");
-        }
-      } catch (error) {
-        console.error("Error registering background sync:", error);
-      }
-    };
-
-    setupBackgroundSync();
+    // Background sync is not fully supported in all browsers
+    // We'll skip this feature for now
+    console.log("Background sync for notifications is disabled");
   }, [swRegistration, user]);
 
   return (

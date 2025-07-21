@@ -4,9 +4,12 @@ import React, { useState } from 'react';
 import { ReviewList } from '@/components/reviews/review-list';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReviewFilters } from '@/types/review';
 
 export default function ReviewsPage() {
   const [activeTab, setActiveTab] = useState('all');
+  const [pendingFilters] = useState<ReviewFilters>({ has_response: false });
+  const [respondedFilters] = useState<ReviewFilters>({ has_response: true });
   
   return (
     <div className="container py-8 max-w-5xl">
@@ -53,7 +56,6 @@ export default function ReviewsPage() {
                 showFilters={true}
                 showRatingSummary={false}
                 allowResponses={true}
-                filters={{ has_response: false }}
                 emptyMessage="No reviews pending response"
               />
             </CardContent>
@@ -73,7 +75,6 @@ export default function ReviewsPage() {
                 showFilters={true}
                 showRatingSummary={false}
                 allowResponses={false}
-                filters={{ has_response: true }}
                 emptyMessage="No responded reviews"
               />
             </CardContent>

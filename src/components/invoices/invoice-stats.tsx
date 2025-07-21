@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useInvoices } from '@/hooks/useInvoices';
-import { InvoiceStats } from '@/types/invoice';
+import type { InvoiceStats } from '@/types/invoice';
 import { formatCurrency } from '@/lib/utils/invoiceUtils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

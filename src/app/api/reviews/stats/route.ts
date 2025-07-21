@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { ReviewStats } from '@/types/review';
 
 // GET /api/reviews/stats - Get review statistics
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+    const supabase = await createClient();
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -21,7 +19,7 @@ export async function GET(request: NextRequest) {
     const customerId = searchParams.get('customer_id');
     
     // Build base query
-    let query = supabase.from('reviews').select('id, rating');
+    let query = supabase.from('job_reviews').select('id, rating');
     
     // Apply filters
     if (jobId) {
@@ -55,8 +53,11 @@ export async function GET(request: NextRequest) {
     let sumRatings = 0;
     
     reviews?.forEach(review => {
-      sumRatings += review.rating;
-      ratingDistribution[review.rating.toString() as keyof typeof ratingDistribution]++;
+      if (review.rating) {
+        sumRatings += review.rating;
+        const ratingKey = review.rating.toString() as keyof typeof ratingDistribution;
+        ratingDistribution[ratingKey]++;
+      }
     });
     
     const averageRating = totalReviews > 0 ? sumRatings / totalReviews : 0;
@@ -65,11 +66,47 @@ export async function GET(request: NextRequest) {
     let responseQuery = supabase.from('review_responses').select('id');
     
     if (jobId) {
-      responseQuery = responseQuery.eq('review.job_id', jobId);
+      // We need to join with job_reviews to filter by job_id
+      const { data: reviewIds } = await supabase
+        .from('job_reviews')
+        .select('id')
+        .eq('job_id', jobId);
+        
+      if (reviewIds && reviewIds.length > 0) {
+        responseQuery = responseQuery.in('review_id', reviewIds.map(r => r.id));
+      } else {
+        // No reviews for this job, so no responses
+        return NextResponse.json({
+          stats: {
+            total_reviews: 0,
+            average_rating: 0,
+            rating_distribution: ratingDistribution,
+            response_rate: 0
+          }
+        });
+      }
     }
     
     if (customerId) {
-      responseQuery = responseQuery.eq('review.customer_id', customerId);
+      // We need to join with job_reviews to filter by customer_id
+      const { data: reviewIds } = await supabase
+        .from('job_reviews')
+        .select('id')
+        .eq('customer_id', customerId);
+        
+      if (reviewIds && reviewIds.length > 0) {
+        responseQuery = responseQuery.in('review_id', reviewIds.map(r => r.id));
+      } else {
+        // No reviews for this customer, so no responses
+        return NextResponse.json({
+          stats: {
+            total_reviews: 0,
+            average_rating: 0,
+            rating_distribution: ratingDistribution,
+            response_rate: 0
+          }
+        });
+      }
     }
     
     const { data: responses, error: responseError } = await responseQuery;

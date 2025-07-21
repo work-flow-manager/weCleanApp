@@ -56,6 +56,50 @@ export type Database = {
         }
         Relationships: []
       }
+      company_invoice_settings: {
+        Row: {
+          company_id: string
+          default_tax_rate: number
+          default_payment_terms: string | null
+          invoice_prefix: string | null
+          invoice_footer: string | null
+          next_invoice_number: number
+          logo_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          default_tax_rate?: number
+          default_payment_terms?: string | null
+          invoice_prefix?: string | null
+          invoice_footer?: string | null
+          next_invoice_number?: number
+          logo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          default_tax_rate?: number
+          default_payment_terms?: string | null
+          invoice_prefix?: string | null
+          invoice_footer?: string | null
+          next_invoice_number?: number
+          logo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_invoice_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       customers: {
         Row: {
           billing_address: string | null
@@ -108,6 +152,199 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      invoices: {
+        Row: {
+          id: string
+          company_id: string
+          customer_id: string
+          job_id: string | null
+          invoice_number: string
+          issue_date: string
+          due_date: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          total_amount: number
+          status: string
+          notes: string | null
+          payment_terms: string | null
+          paid_amount: number
+          paid_date: string | null
+          payment_method: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          customer_id: string
+          job_id?: string | null
+          invoice_number?: string
+          issue_date?: string
+          due_date: string
+          subtotal: number
+          tax_amount?: number
+          tax_rate?: number
+          total_amount: number
+          status?: string
+          notes?: string | null
+          payment_terms?: string | null
+          paid_amount?: number
+          paid_date?: string | null
+          payment_method?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          customer_id?: string
+          job_id?: string | null
+          invoice_number?: string
+          issue_date?: string
+          due_date?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total_amount?: number
+          status?: string
+          notes?: string | null
+          payment_terms?: string | null
+          paid_amount?: number
+          paid_date?: string | null
+          payment_method?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      invoice_items: {
+        Row: {
+          id: string
+          invoice_id: string
+          description: string
+          quantity: number
+          unit_price: number
+          amount: number
+          tax_rate: number | null
+          tax_amount: number | null
+          service_type_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          invoice_id: string
+          description: string
+          quantity: number
+          unit_price: number
+          amount: number
+          tax_rate?: number | null
+          tax_amount?: number | null
+          service_type_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          invoice_id?: string
+          description?: string
+          quantity?: number
+          unit_price?: number
+          amount?: number
+          tax_rate?: number | null
+          tax_amount?: number | null
+          service_type_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      invoice_payments: {
+        Row: {
+          id: string
+          invoice_id: string
+          amount: number
+          payment_date: string
+          payment_method: string
+          transaction_id: string | null
+          notes: string | null
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          invoice_id: string
+          amount: number
+          payment_date?: string
+          payment_method: string
+          transaction_id?: string | null
+          notes?: string | null
+          created_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          invoice_id?: string
+          amount?: number
+          payment_date?: string
+          payment_method?: string
+          transaction_id?: string | null
+          notes?: string | null
+          created_by?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
         ]
       }
       job_assignments: {
@@ -202,6 +439,86 @@ export type Database = {
             referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      job_geofences: {
+        Row: {
+          id: string
+          job_id: string
+          radius: number
+          notification_on_enter: boolean
+          notification_on_exit: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          job_id: string
+          radius?: number
+          notification_on_enter?: boolean
+          notification_on_exit?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          job_id?: string
+          radius?: number
+          notification_on_enter?: boolean
+          notification_on_exit?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_geofences_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      job_photos: {
+        Row: {
+          id: string
+          job_id: string
+          uploaded_by: string
+          url: string
+          type: string
+          caption: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          job_id: string
+          uploaded_by: string
+          url: string
+          type: string
+          caption?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          job_id?: string
+          uploaded_by?: string
+          url?: string
+          type?: string
+          caption?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_photos_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_photos_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
         ]
       }
       job_updates: {
@@ -483,6 +800,48 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      company_members: {
+        Row: {
+          id: string
+          company_id: string
+          profile_id: string
+          role: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          profile_id: string
+          role: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          profile_id?: string
+          role?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
         ]
       }
       team_members: {

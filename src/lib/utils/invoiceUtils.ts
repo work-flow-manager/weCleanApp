@@ -1,4 +1,7 @@
-import { Invoice, InvoiceItem, InvoiceStatus } from '@/types/invoice';
+import { Invoice, InvoiceItem } from '@/types/invoice';
+
+// Define InvoiceStatus type locally since it's not exported from the invoice types
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
 /**
  * Format a currency amount with the specified currency code

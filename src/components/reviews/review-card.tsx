@@ -33,7 +33,7 @@ export function ReviewCard({ review, showJobDetails = false, onReply }: ReviewCa
   // Get customer initials for avatar fallback
   const customerInitials = customerName
     .split(' ')
-    .map(name => name[0])
+    .map((name: string) => name[0])
     .join('')
     .toUpperCase()
     .substring(0, 2);
@@ -108,7 +108,7 @@ export function ReviewCard({ review, showJobDetails = false, onReply }: ReviewCa
                     />
                   </div>
                   <div className="flex justify-center gap-2 mt-2">
-                    {review.photos.map((_, photoIndex) => (
+                    {review.photos?.map((_, photoIndex) => (
                       <button
                         key={photoIndex}
                         className={`h-2 w-2 rounded-full ${

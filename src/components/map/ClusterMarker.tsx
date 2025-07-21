@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, forwardRef } from "react";
 import maplibregl from "maplibre-gl";
 import { useMap } from "./MapContext";
 
@@ -12,26 +12,20 @@ interface ClusterMarkerProps {
   onClick?: (clusterId: number, coordinates: [number, number]) => void;
 }
 
-export default function ClusterMarker({
+const ClusterMarker = forwardRef<any, ClusterMarkerProps>(({
   sourceId,
   color = "#EC4899", // Pink-500 from the design system
   clusterRadius = 50,
   clusterMaxZoom = 14,
   onClick,
-}: ClusterMarkerProps) {
-  const { map, mapLoaded } = useMap();
+}, ref) => {
+  const { map } = useMap();
   const [sourceAdded, setSourceAdded] = useState(false);
 
   useEffect(() => {
-    if (!map || !mapLoaded) return;
+    if (!map || sourceAdded) return;
 
-    // Check if source already exists
-    if (map.getSource(sourceId)) {
-      setSourceAdded(true);
-      return;
-    }
-
-    // Add source for clustering
+    // Add a source for job clusters
     map.addSource(sourceId, {
       type: "geojson",
       data: {
@@ -43,7 +37,7 @@ export default function ClusterMarker({
       clusterRadius,
     });
 
-    // Add cluster layer
+    // Add a layer for the clusters
     map.addLayer({
       id: `${sourceId}-clusters`,
       type: "circle",
@@ -54,19 +48,15 @@ export default function ClusterMarker({
         "circle-radius": [
           "step",
           ["get", "point_count"],
-          20, // radius for point count 0-9
-          10,
-          30, // radius for point count 10-49
-          50,
-          40, // radius for point count 50+
+          20, // Size for clusters with < 10 points
+          10, 30, // Size for clusters with < 30 points
+          30, 40, // Size for clusters with >= 30 points
         ],
         "circle-opacity": 0.8,
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "white",
       },
     });
 
-    // Add cluster count layer
+    // Add a layer for the cluster count labels
     map.addLayer({
       id: `${sourceId}-cluster-count`,
       type: "symbol",
@@ -75,14 +65,14 @@ export default function ClusterMarker({
       layout: {
         "text-field": "{point_count_abbreviated}",
         "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-        "text-size": 12,
+        "text-size": 14,
       },
       paint: {
-        "text-color": "white",
+        "text-color": "#ffffff",
       },
     });
 
-    // Add unclustered point layer
+    // Add a layer for unclustered points
     map.addLayer({
       id: `${sourceId}-unclustered-point`,
       type: "circle",
@@ -92,11 +82,11 @@ export default function ClusterMarker({
         "circle-color": color,
         "circle-radius": 8,
         "circle-stroke-width": 2,
-        "circle-stroke-color": "white",
+        "circle-stroke-color": "#fff",
       },
     });
 
-    // Add click event for clusters
+    // Handle cluster click
     if (onClick) {
       map.on("click", `${sourceId}-clusters`, (e) => {
         const features = map.queryRenderedFeatures(e.point, {
@@ -105,14 +95,14 @@ export default function ClusterMarker({
         
         if (features.length > 0) {
           const clusterId = features[0].properties?.cluster_id;
-          const coordinates = (features[0].geometry as any).coordinates as [number, number];
+          // Type assertion to handle the geometry type
+          const point = features[0].geometry as GeoJSON.Point;
+          const coordinates = point.coordinates as [number, number];
           
-          if (clusterId) {
-            onClick(clusterId, coordinates);
-          }
+          onClick(clusterId, coordinates);
         }
       });
-
+      
       // Change cursor on hover
       map.on("mouseenter", `${sourceId}-clusters`, () => {
         map.getCanvas().style.cursor = "pointer";
@@ -125,37 +115,32 @@ export default function ClusterMarker({
 
     setSourceAdded(true);
 
-    // Clean up on unmount
+    // Expose the source ID through the ref
+    if (ref && typeof ref === 'object') {
+      ref.current = {
+        sourceId,
+        updateSource: (data: any) => {
+          if (map.getSource(sourceId)) {
+            (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(data);
+          }
+        }
+      };
+    }
+
+    // Cleanup
     return () => {
-      if (map && map.getSource(sourceId)) {
+      if (map && map.getLayer(`${sourceId}-clusters`)) {
         map.removeLayer(`${sourceId}-clusters`);
         map.removeLayer(`${sourceId}-cluster-count`);
         map.removeLayer(`${sourceId}-unclustered-point`);
         map.removeSource(sourceId);
       }
     };
-  }, [map, mapLoaded, sourceId, color, clusterRadius, clusterMaxZoom, onClick]);
+  }, [map, sourceId, color, clusterRadius, clusterMaxZoom, onClick, sourceAdded, ref]);
 
-  // Method to update the source data
-  const updateSourceData = (features: any[]) => {
-    if (!map || !sourceAdded) return;
-    
-    const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
-    if (source) {
-      source.setData({
-        type: "FeatureCollection",
-        features,
-      });
-    }
-  };
+  return null;
+});
 
-  // Expose the updateSourceData method
-  React.useImperativeHandle(
-    React.createRef(),
-    () => ({
-      updateSourceData,
-    })
-  );
+ClusterMarker.displayName = "ClusterMarker";
 
-  return null; // This component doesn't render anything directly
-}
+export default ClusterMarker;

@@ -47,9 +47,9 @@ export function ReportTemplateCard({
     
     // Format time (HH:MM)
     const [hours, minutes] = time.split(':');
-    const timeStr = new Date()
-      .setHours(parseInt(hours), parseInt(minutes))
-      .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
     return `${scheduleText} at ${timeStr}`;
   };
@@ -129,7 +129,6 @@ export function ReportTemplateCard({
               template={template}
               onGenerate={handleGenerate}
               onCancel={() => setIsGenerateDialogOpen(false)}
-              isGenerating={isGenerating}
             />
           </DialogContent>
         </Dialog>
